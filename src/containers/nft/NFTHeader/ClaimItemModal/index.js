@@ -8,7 +8,7 @@ import showGenerateTrx from 'helpers/showGenerateTrx';
 import showSignResponse from 'helpers/showSignResponse';
 import TransactionResponse from 'blocks/TransactionResponse';
 import { generateTransactionURL } from 'helpers/explorerURLGenerator';
-import { claimLusiApi } from 'api/nft';
+import { claimItemApi } from 'api/nft';
 import { useState } from 'react';
 import styles from './styles.module.scss';
 
@@ -24,20 +24,20 @@ function ButtonContent({ step, loading }) {
   return 'Claim';
 }
 
-const handleClaim = async (lusi, lusiAsset, userAddress, step, dispatch,
-  setLoading, loadRewardLusi) => {
+const handleClaim = async (item, itemAsset, userAddress, step, dispatch,
+  setLoading, loadRewardItem) => {
   if (step === 'trust') {
     // eslint-disable-next-line no-inner-declarations
     function func() {
-      return generateTrustlineTRX(userAddress, lusiAsset);
+      return generateTrustlineTRX(userAddress, itemAsset);
     }
 
     await showGenerateTrx(func, dispatch)
       .then((trx) => showSignResponse(trx, dispatch, () => {
         dispatch(
           openModalAction({
-            modalProps: { title: `You won #${lusi.assetCode}` },
-            content: <ClaimLusiModal lusi={lusi} loadRewardLusi={loadRewardLusi} />,
+            modalProps: { title: `You won #${item.assetCode}` },
+            content: <ClaimItemModal item={item} loadRewardItem={loadRewardItem} />,
           }),
         );
       }))
@@ -45,7 +45,7 @@ const handleClaim = async (lusi, lusiAsset, userAddress, step, dispatch,
   } else {
     setLoading(true);
     try {
-      const res = await claimLusiApi(userAddress);
+      const res = await claimItemApi(userAddress);
       dispatch(openModalAction({
         modalProps: {},
         content: <TransactionResponse
@@ -57,7 +57,7 @@ const handleClaim = async (lusi, lusiAsset, userAddress, step, dispatch,
           btnLink={generateTransactionURL(res.data.hash)}
         />,
       }));
-      loadRewardLusi();
+      loadRewardItem();
     } catch (e) {
       dispatch(openModalAction({
         modalProps: {},
@@ -71,15 +71,15 @@ const handleClaim = async (lusi, lusiAsset, userAddress, step, dispatch,
   }
 };
 
-const ClaimLusiModal = ({ lusi, loadRewardLusi }) => {
+const ClaimItemModal = ({ item, loadRewardItem }) => {
   const userBalances = useSelector((state) => state.userBalance);
   const userAddress = useSelector((state) => state.user.detail.address);
   const [loading, setLoading] = useState(false);
   const dispatch = useDispatch();
 
   let step = null;
-  const lusiAsset = getAssetDetails({
-    code: lusi.assetCode,
+  const itemAsset = getAssetDetails({
+    code: item.assetCode,
     issuer: process.env.REACT_APP_LUSI_ISSUER,
   });
 
@@ -90,7 +90,7 @@ const ClaimLusiModal = ({ lusi, loadRewardLusi }) => {
       issuer: balance.asset.issuer,
     });
 
-    if (isSameAsset(currentAsset, lusiAsset)) {
+    if (isSameAsset(currentAsset, itemAsset)) {
       step = 'claim';
       found = true;
       break;
@@ -100,10 +100,10 @@ const ClaimLusiModal = ({ lusi, loadRewardLusi }) => {
   if (!found) {
     step = 'trust';
   }
-  let info = `To get started, you need to create a trust line for the #${lusi.assetCode}.`;
+  let info = `To get started, you need to create a trust line for the #${item.assetCode}.`;
 
   if (step === 'claim') {
-    info = 'This is the final step to claiming your Lusi. Please click Claim.';
+    info = 'This is the final step to claiming your Item. Please click Claim.';
   }
 
   return (
@@ -114,13 +114,13 @@ const ClaimLusiModal = ({ lusi, loadRewardLusi }) => {
       <div className={styles.img}>
         <img
           loading="lazy"
-          src={lusi.imageUrl}
+          src={item.imageUrl}
           className={styles['lusi-img']}
         />
       </div>
       <Button
-        onClick={() => handleClaim(lusi,
-          lusiAsset, userAddress, step, dispatch, setLoading, loadRewardLusi)}
+        onClick={() => handleClaim(item,
+          itemAsset, userAddress, step, dispatch, setLoading, loadRewardItem)}
         htmlType="submit"
         variant="primary"
         className={styles.btn}
@@ -132,4 +132,4 @@ const ClaimLusiModal = ({ lusi, loadRewardLusi }) => {
   );
 };
 
-export default ClaimLusiModal;
+export default ClaimItemModal;

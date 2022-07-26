@@ -2,46 +2,46 @@ import { useState, useEffect } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import { openModalAction } from 'actions/modal';
 import useIsLogged from 'hooks/useIsLogged';
-import { checkLusiDropped } from 'api/nft';
-import ClaimLusiModal from '../ClaimLusiModal';
+import { checkItemDropped } from 'api/nft';
+import ClaimItemModal from '../ClaimItemModal';
 
 import styles from './styles.module.scss';
 
-function loadRewardLusi(userAddress, setRewardLusi) {
-  checkLusiDropped(userAddress).then((res) => {
-    setRewardLusi(res.data.lusi);
+function loadRewardItem(userAddress, setRewardItem) {
+  checkItemDropped(userAddress).then((res) => {
+    setRewardItem(res.data.lusi);
   }).catch(() => {
-    setRewardLusi(null);
+    setRewardItem(null);
   });
 }
 
-function ClaimLusiBtn() {
-  const [rewardLusi, setRewardLusi] = useState(null);
+function ClaimItemBtn() {
+  const [rewardItem, setRewardItem] = useState(null);
   const userAddress = useSelector((state) => state.user.detail.address);
   const isLogged = useIsLogged();
   const dispatch = useDispatch();
 
   useEffect(() => {
     if (isLogged) {
-      loadRewardLusi(userAddress, setRewardLusi);
+      loadRewardItem(userAddress, setRewardItem);
     }
   }, [isLogged]);
 
   const handleOpenModal = () => {
-    if (rewardLusi) {
+    if (rewardItem) {
       dispatch(
         openModalAction({
-          modalProps: { title: `You won #${rewardLusi.assetCode}` },
-          content: <ClaimLusiModal
-            lusi={rewardLusi}
-            loadRewardLusi={() => loadRewardLusi(userAddress, setRewardLusi)}
+          modalProps: { title: `You won #${rewardItem.assetCode}` },
+          content: <ClaimItemModal
+            item={rewardItem}
+            loadRewardItem={() => loadRewardItem(userAddress, setRewardItem)}
           />,
         }),
       );
     }
   };
 
-  if (!isLogged || !rewardLusi) {
+  if (!isLogged || !rewardItem) {
     return null;
   }
 
@@ -49,12 +49,12 @@ function ClaimLusiBtn() {
     <div onClick={handleOpenModal} className={styles.main}>
       <div className={styles.items}>
         <div className={styles.logo}>
-          <img src={rewardLusi.imageUrl} width={28} height={28} />
+          <img src={rewardItem.imageUrl} width={28} height={28} />
         </div>
-        <span>Claim my lusi</span>
+        <span>Claim my item</span>
       </div>
     </div>
   );
 }
 
-export default ClaimLusiBtn;
+export default ClaimItemBtn;

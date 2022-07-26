@@ -14,16 +14,14 @@ import ServerSideLoading from 'components/ServerSideLoading';
 import NFTHeader from 'containers/nft/NFTHeader';
 import useDefaultTokens from 'hooks/useDefaultTokens';
 import { extractTokenFromCode } from 'helpers/defaultTokenUtils';
-import { useRouter } from 'next/router';
-import unSlugStr from 'helpers/unSlugStr';
 import InfinitePagination from '../InfinitePagination';
 import styles from './styles.module.scss';
 
 const OFFER_FETCH_LIMIT = 20;
 
-function fetchLusiOffers(cursor, id, defaultTokens) {
+function fetchItemOffers(cursor, assetCode, defaultTokens) {
   return fetchOfferAPI(
-    getAssetDetails({ code: `Lusi${id}`, issuer: process.env.REACT_APP_LUSI_ISSUER }),
+    getAssetDetails({ code: assetCode, issuer: process.env.REACT_APP_LUSI_ISSUER }),
     getAssetDetails(extractTokenFromCode('NLSP', defaultTokens)),
     {
       limit: OFFER_FETCH_LIMIT,
@@ -33,25 +31,25 @@ function fetchLusiOffers(cursor, id, defaultTokens) {
   );
 }
 
-function SingleItemAllOffers() {
+function SingleItemAllOffers({ itemData }) {
   const [nextPageToken, setNextPageToken] = useState(null);
   const [currentPagingToken, setCurrentPagingToken] = useState(null);
   const [pagingTokens, setPagingTokens] = useState([]);
   const defaultTokens = useDefaultTokens();
-  const router = useRouter();
-  const itemId = router.query.id;
-  const itemCollectionSlug = router.query.collection;
+  const { number: itemId, assetCode: itemAssetCode } = itemData;
+  const { name: itemCollectionName, slug: itemCollectionSlug } = itemData.Collection;
+
   const breadCrumbData = [
     {
       name: 'Collections',
       url: urlMaker.nft.collections.root(),
     },
     {
-      name: unSlugStr(itemCollectionSlug),
+      name: itemCollectionName,
       url: urlMaker.nft.collections.singleCollection(itemCollectionSlug),
     },
     {
-      name: `${unSlugStr(itemCollectionSlug)} #${itemId}`,
+      name: `${itemCollectionName} #${itemId}`,
       url: urlMaker.nft.item.root(itemCollectionSlug, itemId),
     },
     {
@@ -66,7 +64,7 @@ function SingleItemAllOffers() {
       key: 1,
       render: (data) => (
         <span className={styles.address}>
-          <a href={generateAddressURL(data.address)} target="_blank" rel="noreferrer">{minimizeAddress(data.seller)}</a>
+          <a href={generateAddressURL(data.seller)} target="_blank" rel="noreferrer">{minimizeAddress(data.seller)}</a>
         </span>
       ),
     },
@@ -90,7 +88,7 @@ function SingleItemAllOffers() {
   const handlePrevPage = () => {
     if (pagingTokens.length > 0) {
       const prevPageToken = pagingTokens[pagingTokens.length - 1];
-      fetchLusiOffers(prevPageToken, itemId, defaultTokens).then(async (res) => {
+      fetchItemOffers(prevPageToken, itemAssetCode, defaultTokens).then(async (res) => {
         setNextPageToken(currentPagingToken);
         setCurrentPagingToken(prevPageToken);
         setPagingTokens((prev) => prev.slice(0, -1));
@@ -108,7 +106,7 @@ function SingleItemAllOffers() {
 
   const handleNextPage = () => {
     if (nextPageToken) {
-      fetchLusiOffers(nextPageToken, itemId, defaultTokens).then(async (res) => {
+      fetchItemOffers(nextPageToken, itemAssetCode, defaultTokens).then(async (res) => {
         if (res.data._embedded.records.length < 1) {
           setNextPageToken(null);
           return;
@@ -138,7 +136,7 @@ function SingleItemAllOffers() {
   };
 
   useEffect(() => {
-    fetchLusiOffers(null, itemId, defaultTokens).then(async (res) => {
+    fetchItemOffers(null, itemAssetCode, defaultTokens).then(async (res) => {
       if (res.data._embedded.records.length >= OFFER_FETCH_LIMIT) {
         setNextPageToken(res
           .data._embedded

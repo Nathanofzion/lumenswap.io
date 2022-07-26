@@ -5,7 +5,7 @@ import { useSelector, useDispatch } from 'react-redux';
 import InputGroup from 'components/InputGroup';
 import Button from 'components/Button';
 import BN from 'helpers/BN';
-import { ONE_LUSI_AMOUNT } from 'appConsts';
+import { ONE_ITEM_AMOUNT } from 'appConsts';
 import generateManageBuyTRX from 'stellar-trx/generateManageBuyTRX';
 import showGenerateTrx from 'helpers/showGenerateTrx';
 import showSignResponse from 'helpers/showSignResponse';
@@ -14,7 +14,7 @@ import useDefaultTokens from 'hooks/useDefaultTokens';
 import { extractTokenFromCode } from 'helpers/defaultTokenUtils';
 import styles from './styles.module.scss';
 
-const PlaceNFTOrder = ({ lusiAssetCode, afterPlace }) => {
+const PlaceNFTOrder = ({ itemAssetCode, afterPlace }) => {
   const dispatch = useDispatch();
   const defaultTokens = useDefaultTokens();
   const userNLSPBalance = useSelector((state) => state.userBalance)
@@ -30,11 +30,11 @@ const PlaceNFTOrder = ({ lusiAssetCode, afterPlace }) => {
       return generateManageBuyTRX(
         userAddress,
         getAssetDetails({
-          code: lusiAssetCode,
+          code: itemAssetCode,
           issuer: process.env.REACT_APP_LUSI_ISSUER,
         }),
         getAssetDetails(extractTokenFromCode('NLSP', defaultTokens)),
-        ONE_LUSI_AMOUNT,
+        ONE_ITEM_AMOUNT,
         new BN(data.price).times(10 ** 7).toFixed(0),
         0,
       );

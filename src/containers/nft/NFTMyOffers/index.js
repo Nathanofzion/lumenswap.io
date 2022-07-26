@@ -38,8 +38,8 @@ function loadOfferData(userAddress, setOrders, defaultTokens) {
     allOffers.push(...data.data._embedded.records);
     setOrders(allOffers
       .filter((offer) => {
-        const isSellAssetLusi = offer.selling.asset_issuer === process.env.REACT_APP_LUSI_ISSUER;
-        const isBuyAssetLusi = offer.buying.asset_issuer === process.env.REACT_APP_LUSI_ISSUER;
+        const isSellAssetItem = offer.selling.asset_issuer === process.env.REACT_APP_LUSI_ISSUER;
+        const isBuyAssetItem = offer.buying.asset_issuer === process.env.REACT_APP_LUSI_ISSUER;
         const isSellAssetLSP = isSameAsset(getAssetDetails(extractTokenFromCode('NLSP', defaultTokens)), getAssetDetails({
           code: offer.selling.asset_code,
           issuer: offer.selling.asset_issuer,
@@ -49,9 +49,9 @@ function loadOfferData(userAddress, setOrders, defaultTokens) {
           issuer: offer.buying.asset_issuer,
         }));
 
-        return (isSellAssetLusi || isBuyAssetLusi) && (isSellAssetLSP || isBuyAssetLSP);
+        return (isSellAssetItem || isBuyAssetItem) && (isSellAssetLSP || isBuyAssetLSP);
       }).map((offer) => {
-        const isSellAssetLusi = offer.selling.asset_issuer === process.env.REACT_APP_LUSI_ISSUER;
+        const isSellAssetItem = offer.selling.asset_issuer === process.env.REACT_APP_LUSI_ISSUER;
         const isBuyAssetLSP = isSameAsset(getAssetDetails(extractTokenFromCode('NLSP', defaultTokens)), getAssetDetails({
           code: offer.buying.asset_code,
           issuer: offer.buying.asset_issuer,
@@ -61,7 +61,7 @@ function loadOfferData(userAddress, setOrders, defaultTokens) {
         // const isBuyer = offer.buyer === userAddress;
 
         let type;
-        if (isSellAssetLusi && isBuyAssetLSP) {
+        if (isSellAssetItem && isBuyAssetLSP) {
           if (isSeller) {
             type = 'Sell';
           } else {
@@ -73,13 +73,13 @@ function loadOfferData(userAddress, setOrders, defaultTokens) {
           type = 'Sell';
         }
 
-        let lusiNumber;
+        let itemNumber;
         let amount;
         if (isBuyAssetLSP) {
-          lusiNumber = offer.selling.asset_code.replace('Lusi', '');
+          itemNumber = offer.selling.asset_code.replace('Lusi', '');
           amount = new BN(offer.price).div(10 ** 7).toFixed(7);
         } else {
-          lusiNumber = offer.buying.asset_code.replace('Lusi', '');
+          itemNumber = offer.buying.asset_code.replace('Lusi', '');
           amount = offer.amount;
         }
 
@@ -88,7 +88,7 @@ function loadOfferData(userAddress, setOrders, defaultTokens) {
           time: offer.last_modified_time,
           type,
           amount,
-          lusiNumber,
+          itemNumber,
         };
       }));
   });
@@ -140,7 +140,10 @@ const NFTOrder = () => {
       render: (data) => (
         <div className={styles['type-clmn']}>
           <span>{data.type} </span>
-          <Link href={urlMaker.nft.lusi.root(data.lusiNumber)}><a>Lusi#{data.lusiNumber}</a></Link>
+          <Link href={urlMaker.nft.item.root(undefined,
+            data.itemNumber)}
+          ><a>{data.assetCode}</a>
+          </Link>
         </div>
       ),
     },

@@ -1,6 +1,6 @@
 import classNames from 'classnames';
 import urlMaker from 'helpers/urlMaker';
-import LusiThumbnail from 'containers/nft/LusiThumbnail';
+import ItemThumbnail from 'containers/nft/ItemThumbnail';
 import Loading from 'components/Loading';
 import styles from './styles.module.scss';
 
@@ -19,8 +19,8 @@ function CollectionNftsData({ collectionNfts }) {
           key={item.number}
           className={classNames('col-xl-3 col-lg-4 col-md-4 col-sm-4 col-12', styles.col, styles['m-t-col'])}
         >
-          <LusiThumbnail
-            name={`Lusi-${item.number}`}
+          <ItemThumbnail
+            name={item.assetCode}
             imgSrc={item.imageUrl}
             price={item.price}
             url={urlMaker.nft.item.root(item.Collection.slug, item.number)}

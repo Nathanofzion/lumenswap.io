@@ -5,7 +5,7 @@ import { useSelector, useDispatch } from 'react-redux';
 import InputGroup from 'components/InputGroup';
 import Button from 'components/Button';
 import BN from 'helpers/BN';
-import { ONE_LUSI_AMOUNT } from 'appConsts';
+import { ONE_ITEM_AMOUNT } from 'appConsts';
 import generateManageSellTRX from 'stellar-trx/generateManageSellTRX';
 import showGenerateTrx from 'helpers/showGenerateTrx';
 import showSignResponse from 'helpers/showSignResponse';
@@ -36,7 +36,7 @@ const SetOrUpdateNFTPrice = ({
             code: itemAssetCode,
             issuer: process.env.REACT_APP_LUSI_ISSUER,
           }),
-          ONE_LUSI_AMOUNT,
+          ONE_ITEM_AMOUNT,
           new BN(data.price).times(10 ** 7).toFixed(0),
           offerId,
         );
@@ -49,7 +49,7 @@ const SetOrUpdateNFTPrice = ({
           code: itemAssetCode,
           issuer: process.env.REACT_APP_LUSI_ISSUER,
         }),
-        ONE_LUSI_AMOUNT,
+        ONE_ITEM_AMOUNT,
         new BN(data.price).times(10 ** 7).toFixed(0),
         '0',
       );

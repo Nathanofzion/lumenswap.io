@@ -14,16 +14,14 @@ import ServerSideLoading from 'components/ServerSideLoading';
 import NFTHeader from 'containers/nft/NFTHeader';
 import useDefaultTokens from 'hooks/useDefaultTokens';
 import { extractTokenFromCode } from 'helpers/defaultTokenUtils';
-import { useRouter } from 'next/router';
-import unSlugStr from 'helpers/unSlugStr';
 import InfinitePagination from '../InfinitePagination';
 import styles from './styles.module.scss';
 
 const OFFER_FETCH_LIMIT = 20;
 
-function fetchLusiTrades(cursor, id, defaultTokens) {
+function fetchItemTrades(cursor, assetCode, defaultTokens) {
   return fetchTradeAPI(
-    getAssetDetails({ code: `Lusi${id}`, issuer: process.env.REACT_APP_LUSI_ISSUER }),
+    getAssetDetails({ code: assetCode, issuer: process.env.REACT_APP_LUSI_ISSUER }),
     getAssetDetails(extractTokenFromCode('NLSP', defaultTokens)),
     {
       limit: OFFER_FETCH_LIMIT,
@@ -33,25 +31,25 @@ function fetchLusiTrades(cursor, id, defaultTokens) {
   );
 }
 
-function SingleItemAllTrades() {
+function SingleItemAllTrades({ itemData }) {
   const [nextPageToken, setNextPageToken] = useState(null);
   const [currentPagingToken, setCurrentPagingToken] = useState(null);
   const [pagingTokens, setPagingTokens] = useState([]);
   const defaultTokens = useDefaultTokens();
-  const router = useRouter();
-  const itemId = router.query.id;
-  const itemCollectionSlug = router.query.collection;
+  const { number: itemId, assetCode: itemAssetCode } = itemData;
+  const { name: itemCollectionName, slug: itemCollectionSlug } = itemData.Collection;
+
   const breadCrumbData = [
     {
       name: 'Collections',
       url: urlMaker.nft.collections.root(),
     },
     {
-      name: unSlugStr(itemCollectionSlug),
+      name: itemCollectionName,
       url: urlMaker.nft.collections.singleCollection(itemCollectionSlug),
     },
     {
-      name: `${unSlugStr(itemCollectionSlug)} #${itemId}`,
+      name: `${itemCollectionName} #${itemId}`,
       url: urlMaker.nft.item.root(itemCollectionSlug, itemId),
     },
     {
@@ -102,7 +100,7 @@ function SingleItemAllTrades() {
   const handlePrevPage = () => {
     if (pagingTokens.length > 0) {
       const prevPageToken = pagingTokens[pagingTokens.length - 1];
-      fetchLusiTrades(prevPageToken, itemId, defaultTokens).then(async (res) => {
+      fetchItemTrades(prevPageToken, itemAssetCode, defaultTokens).then(async (res) => {
         setNextPageToken(currentPagingToken);
         setCurrentPagingToken(prevPageToken);
         setPagingTokens((prev) => prev.slice(0, -1));
@@ -118,7 +116,7 @@ function SingleItemAllTrades() {
 
   const handleNextPage = () => {
     if (nextPageToken) {
-      fetchLusiTrades(nextPageToken, itemId, defaultTokens).then(async (res) => {
+      fetchItemTrades(nextPageToken, itemAssetCode, defaultTokens).then(async (res) => {
         if (res.data._embedded.records.length < 1) {
           setNextPageToken(null);
           return;
@@ -146,7 +144,7 @@ function SingleItemAllTrades() {
   };
 
   useEffect(() => {
-    fetchLusiTrades(null, itemId, defaultTokens).then(async (res) => {
+    fetchItemTrades(null, itemAssetCode, defaultTokens).then(async (res) => {
       if (res.data._embedded.records.length >= OFFER_FETCH_LIMIT) {
         setNextPageToken(res
           .data._embedded
