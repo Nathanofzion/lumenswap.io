@@ -49,13 +49,13 @@ const tableHeaders = [
   },
 ];
 
-function TradesData({ lusiData }) {
+function TradesData({ itemData }) {
   const [tradesData, setTradesData] = useState(null);
   const defaultTokens = useDefaultTokens();
 
   useEffect(() => {
     fetchTradeAPI(
-      getAssetDetails({ code: lusiData.assetCode, issuer: process.env.REACT_APP_LUSI_ISSUER }),
+      getAssetDetails({ code: itemData.assetCode, issuer: process.env.REACT_APP_LUSI_ISSUER }),
       getAssetDetails(extractTokenFromCode('NLSP', defaultTokens)), {
         limit: 10,
         order: 'desc',

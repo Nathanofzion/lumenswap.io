@@ -15,7 +15,7 @@ import { extractTokenFromCode } from 'helpers/defaultTokenUtils';
 import styles from './styles.module.scss';
 
 const SetOrUpdateNFTPrice = ({
-  lusiAssetCode, mode, offerId, afterSetPrice,
+  itemAssetCode, mode, offerId, afterSetPrice,
 }) => {
   const dispatch = useDispatch();
   const userAddress = useSelector((state) => state.user.detail.address);
@@ -27,12 +27,13 @@ const SetOrUpdateNFTPrice = ({
 
   const onSubmit = (data) => {
     function func() {
+      console.log(offerId);
       if (mode === 'update') {
         return generateManageSellTRX(
           userAddress,
           getAssetDetails(extractTokenFromCode('NLSP', defaultTokens)),
           getAssetDetails({
-            code: lusiAssetCode,
+            code: itemAssetCode,
             issuer: process.env.REACT_APP_LUSI_ISSUER,
           }),
           ONE_LUSI_AMOUNT,
@@ -45,7 +46,7 @@ const SetOrUpdateNFTPrice = ({
         userAddress,
         getAssetDetails(extractTokenFromCode('NLSP', defaultTokens)),
         getAssetDetails({
-          code: lusiAssetCode,
+          code: itemAssetCode,
           issuer: process.env.REACT_APP_LUSI_ISSUER,
         }),
         ONE_LUSI_AMOUNT,

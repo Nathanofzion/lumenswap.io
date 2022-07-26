@@ -1,9 +1,17 @@
 import classNames from 'classnames';
 import urlMaker from 'helpers/urlMaker';
 import LusiThumbnail from 'containers/nft/LusiThumbnail';
+import Loading from 'components/Loading';
 import styles from './styles.module.scss';
 
 function CollectionNftsData({ collectionNfts }) {
+  if (!collectionNfts) {
+    return (
+      <div className={styles['loading-nfts-container']}>
+        <Loading size={48} />
+      </div>
+    );
+  }
   return (
     <div className={classNames('row', styles.row, styles['m-t-row'])}>
       {collectionNfts?.map((item) => (
@@ -15,7 +23,7 @@ function CollectionNftsData({ collectionNfts }) {
             name={`Lusi-${item.number}`}
             imgSrc={item.imageUrl}
             price={item.price}
-            url={urlMaker.nft.lusi.root(item.number)}
+            url={urlMaker.nft.item.root(item.Collection.slug, item.number)}
           />
         </div>
       ))}

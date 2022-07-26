@@ -32,9 +32,9 @@ import useDefaultTokens from 'hooks/useDefaultTokens';
 import { extractTokenFromCode } from 'helpers/defaultTokenUtils';
 import PlaceNFTOrder from './PlaceNFTOrder';
 import styles from './styles.module.scss';
-import SingleLusiTabContent from './SingleLusiTabContent';
+import SingleItemTabContent from './SingleItemTabContent';
 import SetOrUpdateNFTPrice from './SetOrUpdateNFTPrice';
-import getLusiOwner from './getLusiOwner';
+import getItemOwner from './getItemOwner';
 
 function PlaceOrSetPriceButtonContent({ buttonState }) {
   if (buttonState === 'loading') {
@@ -56,7 +56,7 @@ function PlaceOrSetPriceButtonContent({ buttonState }) {
   return null;
 }
 
-function loadLusiOffers(data, setLusiOffers, defaultTokens) {
+function loadItemOffers(data, setItemOffers, defaultTokens) {
   fetchOfferAPI(
     getAssetDetails({ code: data.assetCode, issuer: process.env.REACT_APP_LUSI_ISSUER }),
     getAssetDetails(extractTokenFromCode('NLSP', defaultTokens)),
@@ -69,11 +69,11 @@ function loadLusiOffers(data, setLusiOffers, defaultTokens) {
     ._embedded
     .records)
     .then((res) => {
-      setLusiOffers(res);
+      setItemOffers(res);
     });
 }
 
-function loadLusiPrice(assetCode, setLusiPrice, defaultTokens) {
+function loadItemPrice(assetCode, setItemPrice, defaultTokens) {
   fetchOrderBookAPI(
     getAssetDetails({ code: assetCode, issuer: process.env.REACT_APP_LUSI_ISSUER }),
     getAssetDetails(extractTokenFromCode('NLSP', defaultTokens)),
@@ -82,29 +82,29 @@ function loadLusiPrice(assetCode, setLusiPrice, defaultTokens) {
     },
   ).then((res) => {
     if (res.data.asks[0]) {
-      setLusiPrice(res.data.asks[0].price);
+      setItemPrice(res.data.asks[0].price);
       return;
     }
 
-    setLusiPrice('0');
+    setItemPrice('0');
   }).catch((e) => {
     console.error(e);
   });
 }
 
-function loadAllRelatedDataToLusi(data, setLusiOffers,
-  lusiId, setOwnerInfoData, setLusiPrice, defaultTokens) {
+function loadAllRelatedDataToItem(data, setItemOffers,
+  setOwnerInfoData, setItemPrice, defaultTokens) {
   setOwnerInfoData(null);
-  setLusiOffers(null);
-  setLusiPrice(null);
-  loadLusiOffers(data, setLusiOffers, defaultTokens);
-  getLusiOwner(`Lusi${lusiId}`).then((ownerInfo) => {
+  setItemOffers(null);
+  setItemPrice(null);
+  loadItemOffers(data, setItemOffers, defaultTokens);
+  getItemOwner(data.assetCode).then((ownerInfo) => {
     setOwnerInfoData(ownerInfo);
   });
-  loadLusiPrice(data.assetCode, setLusiPrice, defaultTokens);
+  loadItemPrice(data.assetCode, setItemPrice, defaultTokens);
 }
 
-const NFTDetail = ({ id: lusiId, data }) => {
+const NFTDetail = ({ itemData }) => {
   const dispatch = useDispatch();
   const isLogged = useIsLogged();
   const [ownerInfoData, setOwnerInfoData] = useState(null);
@@ -113,13 +113,13 @@ const NFTDetail = ({ id: lusiId, data }) => {
   const userAddress = useSelector((state) => state.user.detail.address);
   const [buttonState, setButtonState] = useState(null);
   const [offerIdToUpdate, setOfferIdToUpdate] = useState(null);
-  const [lusiOffers, setLusiOffers] = useState(null);
+  const [itemOffers, setItemOffers] = useState(null);
   const [showNLSP, setShowNLSP] = useState(true);
-  const [lusiPrice, setLusiPrice] = useState(null);
+  const [itemPrice, setItemPrice] = useState(null);
   const defaultTokens = useDefaultTokens();
 
   useEffect(() => {
-    loadAllRelatedDataToLusi(data, setLusiOffers, lusiId, setOwnerInfoData, setLusiPrice,
+    loadAllRelatedDataToItem(itemData, setItemOffers, setOwnerInfoData, setItemPrice,
       defaultTokens);
   }, []);
 
@@ -128,10 +128,13 @@ const NFTDetail = ({ id: lusiId, data }) => {
       if (isLogged) {
         setButtonState('loading');
 
-        const currentLusi = getAssetDetails({ code: `Lusi${lusiId}`, issuer: process.env.REACT_APP_LUSI_ISSUER });
+        const currentItem = getAssetDetails({
+          code: itemData.assetCode,
+          issuer: process.env.REACT_APP_LUSI_ISSUER,
+        });
         let found = false;
         for (const balance of userBalances) {
-          if (isSameAsset(getAssetDetails(balance.asset), currentLusi)
+          if (isSameAsset(getAssetDetails(balance.asset), currentItem)
           && new BN(balance.rawBalance).gt(0)) {
             found = true;
             break;
@@ -146,7 +149,7 @@ const NFTDetail = ({ id: lusiId, data }) => {
               code: offer.selling.asset_code,
               issuer: offer.selling.asset_issuer,
             });
-            if (isSameAsset(offerSellingAsset, currentLusi)) {
+            if (isSameAsset(offerSellingAsset, currentItem)) {
               offerFound = offer.id;
               break;
             }
@@ -178,7 +181,7 @@ const NFTDetail = ({ id: lusiId, data }) => {
       return (
         <>
           <div className={styles.logo}><BigLogo color="#DF4886" />
-          </div>{humanizeAmount(new BN(lusiPrice).div(10 ** 7).toFixed(7))} NLSP
+          </div>{humanizeAmount(new BN(itemPrice).div(10 ** 7).toFixed(7))} NLSP
         </>
       );
     }
@@ -186,7 +189,7 @@ const NFTDetail = ({ id: lusiId, data }) => {
     return (
       <>
         <div className={styles.logo}><BigLogo color="#0e41f5" />
-        </div>{numeral(humanizeAmount(new BN(lusiPrice))).format('0,0')} LSP
+        </div>{numeral(humanizeAmount(new BN(itemPrice))).format('0,0')} LSP
       </>
     );
   };
@@ -196,7 +199,7 @@ const NFTDetail = ({ id: lusiId, data }) => {
       title: 'Price',
       tooltip: '$NLSP is an LSP-backed asset minted on Stellar, and it’s used for buying and selling Lusis on Lumenswap’s NFT marketplace. 1 NLSP = 10,000,000 LSP.',
       render: () => {
-        if (!new BN(lusiPrice).isZero() && lusiPrice !== null) {
+        if (!new BN(itemPrice).isZero() && itemPrice !== null) {
           return (
             <span className={styles.infos}>
               <PriceInfo />
@@ -218,15 +221,15 @@ const NFTDetail = ({ id: lusiId, data }) => {
     {
       title: 'Asset',
       externalLink: {
-        title: `${data.nftInfo.asset}`,
-        url: assetGenerator(data.assetCode, process.env.REACT_APP_LUSI_ISSUER),
+        title: `${itemData.assetCode}`,
+        url: assetGenerator(itemData.assetCode, process.env.REACT_APP_LUSI_ISSUER),
       },
     },
     {
       title: 'IPFs hash',
       externalLink: {
-        title: `${minimizeAddress(data.nftInfo.ipfHash)}`,
-        url: ipfsHashGenerator(data.nftInfo.ipfHash),
+        title: `${minimizeAddress(itemData.ipfHash)}`,
+        url: ipfsHashGenerator(itemData.ipfHash),
       },
     },
   ];
@@ -276,11 +279,15 @@ const NFTDetail = ({ id: lusiId, data }) => {
 
   const breadCrumbData = [
     {
-      name: 'My lusi',
-      url: urlMaker.nft.root(),
+      name: 'Collections',
+      url: urlMaker.nft.collections.root(),
     },
     {
-      name: `Lusi #${lusiId}`,
+      name: itemData.Collection.name,
+      url: urlMaker.nft.collections.singleCollection(itemData.Collection.slug),
+    },
+    {
+      name: `${itemData.Collection.name} #${itemData.number}`,
     },
   ];
 
@@ -291,9 +298,9 @@ const NFTDetail = ({ id: lusiId, data }) => {
           openModalAction({
             modalProps: { title: 'Place an offer' },
             content: <PlaceNFTOrder
-              lusiAssetCode={data.assetCode}
-              afterPlace={() => loadAllRelatedDataToLusi(data,
-                setLusiOffers, lusiId, setOwnerInfoData, setLusiPrice, defaultTokens)}
+              itemAssetCode={itemData.assetCode}
+              afterPlace={() => loadAllRelatedDataToItem(itemData,
+                setItemOffers, setOwnerInfoData, setItemPrice, defaultTokens)}
             />,
           }),
         );
@@ -302,11 +309,11 @@ const NFTDetail = ({ id: lusiId, data }) => {
           openModalAction({
             modalProps: { title: 'Set a price' },
             content: <SetOrUpdateNFTPrice
-              lusiAssetCode={data.assetCode}
+              itemAssetCode={itemData.assetCode}
               mode={buttonState}
               offerId={offerIdToUpdate}
-              afterSetPrice={() => loadAllRelatedDataToLusi(data,
-                setLusiOffers, lusiId, setOwnerInfoData, setLusiPrice, defaultTokens)}
+              afterSetPrice={() => loadAllRelatedDataToItem(itemData,
+                setItemOffers, setOwnerInfoData, setItemPrice, defaultTokens)}
             />,
           }),
         );
@@ -315,11 +322,11 @@ const NFTDetail = ({ id: lusiId, data }) => {
           openModalAction({
             modalProps: { title: 'Update price' },
             content: <SetOrUpdateNFTPrice
-              lusiAssetCode={data.assetCode}
+              itemAssetCode={itemData.assetCode}
               mode={buttonState}
               offerId={offerIdToUpdate}
-              afterSetPrice={() => loadAllRelatedDataToLusi(data,
-                setLusiOffers, lusiId, setOwnerInfoData, setLusiPrice, defaultTokens)}
+              afterSetPrice={() => loadAllRelatedDataToItem(itemData,
+                setItemOffers, setOwnerInfoData, setItemPrice, defaultTokens)}
             />,
           }),
         );
@@ -332,23 +339,23 @@ const NFTDetail = ({ id: lusiId, data }) => {
   const handleChangeTab = (tabId) => {
     setTab(tabId);
     if (tabId === 'offer') {
-      setLusiOffers(null);
-      loadLusiOffers(data, setLusiOffers, defaultTokens);
+      setItemOffers(null);
+      loadItemOffers(itemData, setItemOffers, defaultTokens);
     }
   };
 
   function generateLink() {
     if (tab === 'offer') {
-      return urlMaker.nft.lusi.offers(lusiId);
+      return urlMaker.nft.item.offers(itemData.Collection.slug, itemData.number);
     }
 
-    return urlMaker.nft.lusi.trades(lusiId);
+    return urlMaker.nft.item.trades(itemData.Collection.slug, itemData.number);
   }
 
   return (
     <div className="container-fluid">
       <Head>
-        <title>Lusi#{lusiId} | Lumenswap</title>
+        <title>Item#{itemData.number} | Lumenswap</title>
       </Head>
       <NFTHeader />
       <ServerSideLoading>
@@ -377,7 +384,7 @@ const NFTDetail = ({ id: lusiId, data }) => {
                     <div className={classNames('d-flex justify-content-center', styles['img-container'])}>
                       <img
                         loading="lazy"
-                        src={data.imageUrl}
+                        src={itemData.imageUrl}
                         className={styles['lusi-img']}
                       />
                     </div>
@@ -387,7 +394,7 @@ const NFTDetail = ({ id: lusiId, data }) => {
                   <InfoBox
                     title="NFT Info"
                     rows={nftInfo}
-                    data={data.nftInfo}
+                    data={itemData}
                     className={styles['first-info-box']}
                   />
                   <InfoBox
@@ -403,12 +410,12 @@ const NFTDetail = ({ id: lusiId, data }) => {
                   <div className={classNames(styles['card-2'], styles['card-tabs'])}>
                     <CTabs
                       tabs={tabs}
-                      tabContent={SingleLusiTabContent}
+                      tabContent={SingleItemTabContent}
                       className={styles.tabs}
                       onChange={handleChangeTab}
                       customTabProps={{
-                        lusiData: data,
-                        offers: lusiOffers,
+                        itemData,
+                        offers: itemOffers,
                       }}
                     />
                   </div>

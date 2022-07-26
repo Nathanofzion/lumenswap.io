@@ -14,6 +14,8 @@ import ServerSideLoading from 'components/ServerSideLoading';
 import NFTHeader from 'containers/nft/NFTHeader';
 import useDefaultTokens from 'hooks/useDefaultTokens';
 import { extractTokenFromCode } from 'helpers/defaultTokenUtils';
+import { useRouter } from 'next/router';
+import unSlugStr from 'helpers/unSlugStr';
 import InfinitePagination from '../InfinitePagination';
 import styles from './styles.module.scss';
 
@@ -31,19 +33,26 @@ function fetchLusiOffers(cursor, id, defaultTokens) {
   );
 }
 
-function SingleLusiAllOffers({ id }) {
+function SingleItemAllOffers() {
   const [nextPageToken, setNextPageToken] = useState(null);
   const [currentPagingToken, setCurrentPagingToken] = useState(null);
   const [pagingTokens, setPagingTokens] = useState([]);
   const defaultTokens = useDefaultTokens();
-  const headerData = [
+  const router = useRouter();
+  const itemId = router.query.id;
+  const itemCollectionSlug = router.query.collection;
+  const breadCrumbData = [
     {
-      name: "All Lusi's",
-      url: urlMaker.nft.root(),
+      name: 'Collections',
+      url: urlMaker.nft.collections.root(),
     },
     {
-      name: `Lusi #${id}`,
-      url: urlMaker.nft.lusi.root(id),
+      name: unSlugStr(itemCollectionSlug),
+      url: urlMaker.nft.collections.singleCollection(itemCollectionSlug),
+    },
+    {
+      name: `${unSlugStr(itemCollectionSlug)} #${itemId}`,
+      url: urlMaker.nft.item.root(itemCollectionSlug, itemId),
     },
     {
       name: 'Offers',
@@ -81,7 +90,7 @@ function SingleLusiAllOffers({ id }) {
   const handlePrevPage = () => {
     if (pagingTokens.length > 0) {
       const prevPageToken = pagingTokens[pagingTokens.length - 1];
-      fetchLusiOffers(prevPageToken, id, defaultTokens).then(async (res) => {
+      fetchLusiOffers(prevPageToken, itemId, defaultTokens).then(async (res) => {
         setNextPageToken(currentPagingToken);
         setCurrentPagingToken(prevPageToken);
         setPagingTokens((prev) => prev.slice(0, -1));
@@ -99,7 +108,7 @@ function SingleLusiAllOffers({ id }) {
 
   const handleNextPage = () => {
     if (nextPageToken) {
-      fetchLusiOffers(nextPageToken, id, defaultTokens).then(async (res) => {
+      fetchLusiOffers(nextPageToken, itemId, defaultTokens).then(async (res) => {
         if (res.data._embedded.records.length < 1) {
           setNextPageToken(null);
           return;
@@ -129,7 +138,7 @@ function SingleLusiAllOffers({ id }) {
   };
 
   useEffect(() => {
-    fetchLusiOffers(null, id, defaultTokens).then(async (res) => {
+    fetchLusiOffers(null, itemId, defaultTokens).then(async (res) => {
       if (res.data._embedded.records.length >= OFFER_FETCH_LIMIT) {
         setNextPageToken(res
           .data._embedded
@@ -151,14 +160,14 @@ function SingleLusiAllOffers({ id }) {
   return (
     <div className="container-fluid">
       <Head>
-        <title>Lusi#{id} | All offers | Lumenswap</title>
+        <title>Item#{itemId} | All offers | Lumenswap</title>
       </Head>
       <NFTHeader />
       <ServerSideLoading>
         <div className={classNames('layout main', styles.main)}>
           <div className="row justify-content-center">
             <div className="col-xl-8 col-lg-10 col-md-11 col-sm-12 col-12">
-              <Breadcrumb data={headerData} className={styles.header} />
+              <Breadcrumb data={breadCrumbData} className={styles.header} />
               <div className={styles['table-container']}>
                 <div className={styles['table-header']}>
                   <span>Offers</span>
@@ -187,4 +196,4 @@ function SingleLusiAllOffers({ id }) {
   );
 }
 
-export default SingleLusiAllOffers;
+export default SingleItemAllOffers;

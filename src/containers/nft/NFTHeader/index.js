@@ -11,7 +11,7 @@ const NFTHeader = () => {
     {
       name: 'Collections',
       link: urlMaker.nft.root(),
-      disableMainHref: true,
+      disableMainHref: false,
     },
     {
       name: 'My items',

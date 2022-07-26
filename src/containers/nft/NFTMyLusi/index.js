@@ -82,7 +82,7 @@ const NFTCollections = () => {
                       name={`Lusi ${item.number}`}
                       imgSrc={item.imageUrl}
                       price={item.price}
-                      url={urlMaker.nft.lusi.root(item.number)}
+                      url={urlMaker.nft.item.root(item.number)}
                     />
                   </div>
                 ))}

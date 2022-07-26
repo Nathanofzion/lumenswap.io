@@ -102,14 +102,18 @@ const urlMaker = {
   },
 
   nft: {
-    root: () => `${rootUrl.nft}/`,
+    root: () => `${rootUrl.nft}`,
     orders: () => `${rootUrl.nft}/offers`,
     stats: () => `${rootUrl.nft}/stats`,
     myLusi: () => `${rootUrl.nft}/my-lusi`,
-    lusi: {
-      root: (number) => `${rootUrl.nft}/lusi/${number}`,
-      trades: (number) => `${urlMaker.nft.lusi.root(number)}/trades`,
-      offers: (number) => `${urlMaker.nft.lusi.root(number)}/offers`,
+    collections: {
+      root: () => `${rootUrl.nft}`,
+      singleCollection: (slug) => `${rootUrl.nft}/${slug}`,
+    },
+    item: {
+      root: (slug, id) => `${rootUrl.nft}/${slug}/${id}`,
+      trades: (slug, id) => `${urlMaker.nft.item.root(slug, id)}/trades`,
+      offers: (slug, id) => `${urlMaker.nft.item.root(slug, id)}/offers`,
     },
   },
 
