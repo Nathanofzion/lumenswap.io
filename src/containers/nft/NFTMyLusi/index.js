@@ -7,7 +7,6 @@ import { useState, useEffect } from 'react';
 import { useSelector } from 'react-redux';
 import { useRouter } from 'next/router';
 import useIsLogged from 'hooks/useIsLogged';
-import fetchAllLusi from 'api/AllLusiAPI';
 import BN from 'helpers/BN';
 import NoData from 'components/NoData';
 import CCard from 'components/CCard';
@@ -43,9 +42,9 @@ const NFTCollections = () => {
       .filter((i) => i.asset.issuer === process.env.REACT_APP_LUSI_ISSUER
       && new BN(i.rawBalance).isGreaterThan(0))
       .map((i) => i.asset.code);
-    fetchAllLusi().then((data) => {
-      setMyItems(data.filter((i) => items.includes(i.assetCode)));
-    });
+    // fetchAllLusi().then((data) => {
+    //   setMyItems(data.filter((i) => items.includes(i.assetCode)));
+    // });
   }, []);
 
   if (!myItems) {
