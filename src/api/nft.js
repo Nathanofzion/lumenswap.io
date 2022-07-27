@@ -55,3 +55,17 @@ export async function getItemDetails(slug, id) {
   const response = await axios.get(`${process.env.REACT_APP_LUMEN_API}/nft/collection/${slug}/nfts/${id}`);
   return response.data;
 }
+
+export async function getMyNfts(userNfts) {
+  const response = await axios.post(`${process.env.REACT_APP_LUMEN_API}/nft/my-nfts`, {
+    assets: userNfts,
+  });
+  return response.data;
+}
+
+export async function getMyOffersData(userOffers) {
+  const response = await axios.post(`${process.env.REACT_APP_LUMEN_API}/nft/my-offers`, {
+    assets: userOffers,
+  });
+  return response.data;
+}
