@@ -1,14 +1,20 @@
 import { getCollectionStats, getSingleCollection } from 'api/nft';
 
 export async function NFTCollectionNftsPageGetServerSideProps({ params }) {
-  const collectionId = params.collectionId;
-  const collectionData = await getSingleCollection(collectionId);
-  const collectionStats = await getCollectionStats(collectionId);
+  try {
+    const collectionSlugName = params.collection;
+    const collectionData = await getSingleCollection(collectionSlugName);
+    const collectionStats = await getCollectionStats(collectionSlugName);
 
-  return {
-    props: {
-      collectionData,
-      collectionStats,
-    },
-  };
+    return {
+      props: {
+        collectionData,
+        collectionStats,
+      },
+    };
+  } catch (err) {
+    return {
+      notFound: true,
+    };
+  }
 }

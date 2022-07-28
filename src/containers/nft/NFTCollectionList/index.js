@@ -1,7 +1,6 @@
 import { useState, useEffect } from 'react';
 import Head from 'next/head';
 import classNames from 'classnames';
-import Loading from 'components/Loading';
 import SelectOption from 'components/SelectOption';
 import BN from 'helpers/BN';
 import ServerSideLoading from 'components/ServerSideLoading';
@@ -9,6 +8,8 @@ import NFTHeader from 'containers/nft/NFTHeader';
 import { getCollectionNfts } from 'api/nft';
 import { useRouter } from 'next/router';
 import Input from 'components/Input';
+import Breadcrumb from 'components/BreadCrumb';
+import urlMaker from 'helpers/urlMaker';
 import CollectionNftsData from './CollectionNftsData';
 import styles from './styles.module.scss';
 import CollectionDataCard from './CollectionDataCard';
@@ -37,7 +38,7 @@ const NFTCollectionListPage = ({ collectionData, collectionStats }) => {
   const router = useRouter();
 
   useEffect(() => {
-    getCollectionNfts(router.query.collectionId).then((nfts) => {
+    getCollectionNfts(router.query.collection).then((nfts) => {
       setCollectionNfts(nfts);
     });
   }, []);
@@ -48,36 +49,36 @@ const NFTCollectionListPage = ({ collectionData, collectionStats }) => {
 
   let filteredCollectionNfts = collectionNfts;
 
-  if (!collectionNfts) {
-    return (
-      <NFTListContainer title="All Lusi’s | Lumenswap">
-        <div className={styles['loading-container']}>
-          <Loading size={48} />
-        </div>
-      </NFTListContainer>
-    );
-  }
-
   if (select.value === '1') {
     filteredCollectionNfts = filteredCollectionNfts
-      .sort((a, b) => new BN(a.price).comparedTo(b.price));
+      ?.sort((a, b) => new BN(a.price).comparedTo(b.price));
   }
   if (select.value === '2') {
     filteredCollectionNfts = filteredCollectionNfts
-      .sort((a, b) => new BN(b.price).comparedTo(a.price));
+      ?.sort((a, b) => new BN(b.price).comparedTo(a.price));
   }
   if (select.value === '3') {
     filteredCollectionNfts = filteredCollectionNfts
-      .sort((a, b) => new BN(a.number).comparedTo(b.number));
+      ?.sort((a, b) => new BN(a.number).comparedTo(b.number));
   }
   if (select.value === '4') {
     filteredCollectionNfts = filteredCollectionNfts
-      .sort((a, b) => new BN(b.number).comparedTo(a.number));
+      ?.sort((a, b) => new BN(b.number).comparedTo(a.number));
   }
   if (searchQuery && searchQuery !== '') {
-    filteredCollectionNfts = filteredCollectionNfts.filter((nft) => nft.number.toString()
+    filteredCollectionNfts = filteredCollectionNfts?.filter((nft) => nft.number.toString()
       .search(searchQuery) !== -1);
   }
+
+  const breadCrumbData = [
+    {
+      name: 'Collections',
+      url: urlMaker.nft.collections.root(),
+    },
+    {
+      name: collectionData.name,
+    },
+  ];
 
   return (
     <NFTListContainer title="Collection nfts| Lumenswap">
@@ -85,6 +86,10 @@ const NFTCollectionListPage = ({ collectionData, collectionStats }) => {
         <div className={classNames('layout main', styles.main)}>
           <div className="row justify-content-center">
             <div className="col-xl-8 col-lg-10 col-md-11 col-sm-12 col-12">
+              <Breadcrumb
+                className={styles['bread-crumb']}
+                data={breadCrumbData}
+              />
               <CollectionDataCard collection={collectionData} collectionStats={collectionStats} />
               <div className={styles['search-container']}>
                 <Input
@@ -99,7 +104,9 @@ const NFTCollectionListPage = ({ collectionData, collectionStats }) => {
                   isSearchable={false}
                 />
               </div>
-              <CollectionNftsData collectionNfts={filteredCollectionNfts} />
+              <CollectionNftsData
+                collectionNfts={filteredCollectionNfts}
+              />
             </div>
           </div>
         </div>

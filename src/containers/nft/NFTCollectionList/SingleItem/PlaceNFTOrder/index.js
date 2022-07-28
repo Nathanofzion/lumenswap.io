@@ -1,12 +1,12 @@
 import { useEffect } from 'react';
 import { Controller, useForm } from 'react-hook-form';
-import { getAssetDetails } from 'helpers/asset';
+import { getAssetDetails, isSameAsset } from 'helpers/asset';
 import { useSelector, useDispatch } from 'react-redux';
 import InputGroup from 'components/InputGroup';
 import Button from 'components/Button';
 import BN from 'helpers/BN';
-import { ONE_LUSI_AMOUNT } from 'appConsts';
-import generateManageSellTRX from 'stellar-trx/generateManageSellTRX';
+import { ONE_ITEM_AMOUNT } from 'appConsts';
+import generateManageBuyTRX from 'stellar-trx/generateManageBuyTRX';
 import showGenerateTrx from 'helpers/showGenerateTrx';
 import showSignResponse from 'helpers/showSignResponse';
 import numeral from 'numeral';
@@ -14,12 +14,12 @@ import useDefaultTokens from 'hooks/useDefaultTokens';
 import { extractTokenFromCode } from 'helpers/defaultTokenUtils';
 import styles from './styles.module.scss';
 
-const SetOrUpdateNFTPrice = ({
-  lusiAssetCode, mode, offerId, afterSetPrice,
-}) => {
+const PlaceNFTOrder = ({ itemAssetCode, afterPlace }) => {
   const dispatch = useDispatch();
-  const userAddress = useSelector((state) => state.user.detail.address);
   const defaultTokens = useDefaultTokens();
+  const userNLSPBalance = useSelector((state) => state.userBalance)
+    .find((balance) => isSameAsset(getAssetDetails(balance.asset), getAssetDetails(extractTokenFromCode('NLSP', defaultTokens))));
+  const userAddress = useSelector((state) => state.user.detail.address);
 
   const {
     control, handleSubmit, formState, trigger, getValues,
@@ -27,37 +27,23 @@ const SetOrUpdateNFTPrice = ({
 
   const onSubmit = (data) => {
     function func() {
-      if (mode === 'update') {
-        return generateManageSellTRX(
-          userAddress,
-          getAssetDetails(extractTokenFromCode('NLSP', defaultTokens)),
-          getAssetDetails({
-            code: lusiAssetCode,
-            issuer: process.env.REACT_APP_LUSI_ISSUER,
-          }),
-          ONE_LUSI_AMOUNT,
-          new BN(data.price).times(10 ** 7).toFixed(0),
-          offerId,
-        );
-      }
-
-      return generateManageSellTRX(
+      return generateManageBuyTRX(
         userAddress,
-        getAssetDetails(extractTokenFromCode('NLSP', defaultTokens)),
         getAssetDetails({
-          code: lusiAssetCode,
+          code: itemAssetCode,
           issuer: process.env.REACT_APP_LUSI_ISSUER,
         }),
-        ONE_LUSI_AMOUNT,
+        getAssetDetails(extractTokenFromCode('NLSP', defaultTokens)),
+        ONE_ITEM_AMOUNT,
         new BN(data.price).times(10 ** 7).toFixed(0),
-        '0',
+        0,
       );
     }
 
     showGenerateTrx(func, dispatch)
       .then((trx) => showSignResponse(trx, dispatch))
       .catch(console.log)
-      .then(afterSetPrice);
+      .then(afterPlace);
   };
 
   useEffect(() => {
@@ -67,6 +53,10 @@ const SetOrUpdateNFTPrice = ({
   const validatePrice = (price) => {
     if (new BN(0).gt(price)) {
       return 'Price is not valid';
+    }
+
+    if (new BN(price).gt(userNLSPBalance?.balance)) {
+      return 'Insufficient NSLP';
     }
 
     const lessThanNLSP = '0.0000001';
@@ -108,7 +98,7 @@ const SetOrUpdateNFTPrice = ({
           render={({ field }) => (
             <InputGroup
               variant="primary"
-              placeholder="100"
+              placeholder="10"
               rightLabel="NLSP"
               value={field.value}
               onChange={field.onChange}
@@ -130,4 +120,4 @@ const SetOrUpdateNFTPrice = ({
   );
 };
 
-export default SetOrUpdateNFTPrice;
+export default PlaceNFTOrder;

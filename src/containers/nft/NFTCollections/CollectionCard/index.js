@@ -1,9 +1,10 @@
+import urlMaker from 'helpers/urlMaker';
 import Link from 'next/link';
 import styles from './styles.module.scss';
 
 function CollectionCard({ collection }) {
   return (
-    <Link href="/">
+    <Link href={urlMaker.nft.collections.singleCollection(collection.slug)}>
       <a className={styles.link}>
         <div className={styles.main}>
           <div className={styles['banner-container']}>

@@ -1,13 +1,13 @@
 import { getAccounts } from 'api/nft';
 import BN from 'helpers/BN';
 
-export default function getLusiOwner(lusiId) {
-  return getAccounts(lusiId).then(async (res) => {
+export default function getItemOwner(itemId) {
+  return getAccounts(itemId).then(async (res) => {
     if (res.data._embedded.records.length > 0) {
       for (const account of res.data._embedded.records) {
         for (const balance of account.balances) {
           if (
-            balance.asset_code === lusiId
+            balance.asset_code === itemId
             && balance.asset_issuer === process.env.REACT_APP_LUSI_ISSUER
             && new BN(balance.balance).gt(0)
           ) {
@@ -21,7 +21,7 @@ export default function getLusiOwner(lusiId) {
       }
 
       const nextPageAccounts = await getAccounts(
-        lusiId,
+        itemId,
         res.data._embedded.records[0].paging_token,
       );
 
@@ -29,7 +29,7 @@ export default function getLusiOwner(lusiId) {
         for (const account of nextPageAccounts.data._embedded.records) {
           for (const balance of account.balances) {
             if (
-              balance.asset_code === lusiId
+              balance.asset_code === itemId
               && balance.asset_issuer === process.env.REACT_APP_LUSI_ISSUER
               && new BN(balance.balance).gt(0)
             ) {

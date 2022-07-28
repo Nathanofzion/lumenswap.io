@@ -1,15 +1,15 @@
 import OffersData from './OffersData';
 import TradesData from './TradesData';
 
-const SingleLusiTabContent = ({ tab, lusiData, offers }) => {
+const SingleItemTabContent = ({ tab, itemData, offers }) => {
   if (tab === 'offer') {
     return (
       <OffersData offers={offers} />
     );
   }
   return (
-    <TradesData lusiData={lusiData} />
+    <TradesData itemData={itemData} />
   );
 };
 
-export default SingleLusiTabContent;
+export default SingleItemTabContent;
