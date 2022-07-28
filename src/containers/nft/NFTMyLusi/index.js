@@ -11,6 +11,7 @@ import BN from 'helpers/BN';
 import NoData from 'components/NoData';
 import CCard from 'components/CCard';
 import ServerSideLoading from 'components/ServerSideLoading';
+import { getMyNfts } from 'api/nft';
 import NFTHeader from '../NFTHeader';
 import styles from './styles.module.scss';
 
@@ -41,10 +42,10 @@ const NFTCollections = () => {
     const items = userBalances
       .filter((i) => i.asset.issuer === process.env.REACT_APP_LUSI_ISSUER
       && new BN(i.rawBalance).isGreaterThan(0))
-      .map((i) => i.asset.code);
-    // fetchAllLusi().then((data) => {
-    //   setMyItems(data.filter((i) => items.includes(i.assetCode)));
-    // });
+      .map((i) => ({ code: i.asset.code, issuer: i.asset.issuer }));
+    getMyNfts(items).then((nfts) => {
+      setMyItems(nfts);
+    });
   }, []);
 
   if (!myItems) {
@@ -81,7 +82,7 @@ const NFTCollections = () => {
                       name={item.assetCode}
                       imgSrc={item.imageUrl}
                       price={item.price}
-                      url={urlMaker.nft.item.root(item.number)}
+                      url={urlMaker.nft.item.root(item.slug, item.number)}
                     />
                   </div>
                 ))}

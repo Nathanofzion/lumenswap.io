@@ -19,11 +19,13 @@ import humanizeAmount from 'helpers/humanizeAmount';
 import ServerSideLoading from 'components/ServerSideLoading';
 import useDefaultTokens from 'hooks/useDefaultTokens';
 import { extractTokenFromCode } from 'helpers/defaultTokenUtils';
+import { getMyOffersData } from 'api/nft';
 import NFTHeader from '../NFTHeader';
 import styles from './styles.module.scss';
 
-function loadOfferData(userAddress, setOrders, defaultTokens) {
+function loadOfferData(userAddress, setOrders, defaultTokens, setOfferItems) {
   const allOffers = [];
+  const offerItems = [];
   fetchOffersOfAccount(userAddress, { limit: 200 }).then((data) => {
     allOffers.push(...data.data._embedded.records);
     if (data.data._embedded.records.length > 0) {
@@ -36,66 +38,86 @@ function loadOfferData(userAddress, setOrders, defaultTokens) {
     return data;
   }).then((data) => {
     allOffers.push(...data.data._embedded.records);
-    setOrders(allOffers
+    const filtredOffers = allOffers
       .filter((offer) => {
         const isSellAssetItem = offer.selling.asset_issuer === process.env.REACT_APP_LUSI_ISSUER;
         const isBuyAssetItem = offer.buying.asset_issuer === process.env.REACT_APP_LUSI_ISSUER;
         const isSellAssetLSP = isSameAsset(getAssetDetails(extractTokenFromCode('NLSP', defaultTokens)), getAssetDetails({
           code: offer.selling.asset_code,
           issuer: offer.selling.asset_issuer,
+          type: offer.selling.asset_type,
         }));
         const isBuyAssetLSP = isSameAsset(getAssetDetails(extractTokenFromCode('NLSP', defaultTokens)), getAssetDetails({
           code: offer.buying.asset_code,
           issuer: offer.buying.asset_issuer,
+          type: offer.buying.asset_type,
         }));
 
         return (isSellAssetItem || isBuyAssetItem) && (isSellAssetLSP || isBuyAssetLSP);
-      }).map((offer) => {
-        const isSellAssetItem = offer.selling.asset_issuer === process.env.REACT_APP_LUSI_ISSUER;
-        const isBuyAssetLSP = isSameAsset(getAssetDetails(extractTokenFromCode('NLSP', defaultTokens)), getAssetDetails({
-          code: offer.buying.asset_code,
-          issuer: offer.buying.asset_issuer,
-        }));
+      });
 
-        const isSeller = offer.seller === userAddress;
-        // const isBuyer = offer.buyer === userAddress;
-
-        let type;
-        if (isSellAssetItem && isBuyAssetLSP) {
-          if (isSeller) {
-            type = 'Sell';
-          } else {
-            type = 'Buy';
-          }
-        } else if (isSeller) {
-          type = 'Buy';
-        } else {
-          type = 'Sell';
-        }
-
-        let itemNumber;
-        let amount;
-        if (isBuyAssetLSP) {
-          itemNumber = offer.selling.asset_code.replace('Lusi', '');
-          amount = new BN(offer.price).div(10 ** 7).toFixed(7);
-        } else {
-          itemNumber = offer.buying.asset_code.replace('Lusi', '');
-          amount = offer.amount;
-        }
-
-        return {
-          id: offer.id,
-          time: offer.last_modified_time,
-          type,
-          amount,
-          itemNumber,
-        };
+    setOrders(filtredOffers.map((offer) => {
+      const isSellAssetItem = offer.selling.asset_issuer === process.env.REACT_APP_LUSI_ISSUER;
+      const isBuyAssetLSP = isSameAsset(getAssetDetails(extractTokenFromCode('NLSP', defaultTokens)), getAssetDetails({
+        code: offer.buying.asset_code,
+        issuer: offer.buying.asset_issuer,
+        type: offer.buying.asset_type,
       }));
+
+      if (isSellAssetItem) {
+        offerItems.push({
+          code: offer.selling.asset_code,
+          issuer: offer.selling.asset_issuer,
+          offerId: offer.id,
+        });
+      }
+      offerItems.push({
+        code: offer.buying.asset_code,
+        issuer: offer.buying.asset_issuer,
+        offerId: offer.id,
+      });
+
+      const isSeller = offer.seller === userAddress;
+      // const isBuyer = offer.buyer === userAddress;
+
+      let type;
+      if (isSellAssetItem && isBuyAssetLSP) {
+        if (isSeller) {
+          type = 'Sell';
+        } else {
+          type = 'Buy';
+        }
+      } else if (isSeller) {
+        type = 'Buy';
+      } else {
+        type = 'Sell';
+      }
+
+      let amount;
+      if (isBuyAssetLSP) {
+        amount = new BN(offer.price).div(10 ** 7).toFixed(7);
+      } else {
+        amount = offer.amount;
+      }
+
+      return {
+        id: offer.id,
+        time: offer.last_modified_time,
+        type,
+        amount,
+      };
+    }));
+    return offerItems;
+  }).then((items) => {
+    getMyOffersData(items).then((offerItemsData) => {
+      setOfferItems(offerItemsData);
+    });
   });
 }
 
 const NFTOrder = () => {
   const [orders, setOrders] = useState(null);
+  const [offerItems, setOfferItems] = useState(null);
   const userAddress = useSelector((state) => state.user.detail.address);
   const isLogged = useIsLogged();
   const router = useRouter();
@@ -109,7 +131,7 @@ const NFTOrder = () => {
   }, [isLogged]);
 
   useEffect(() => {
-    loadOfferData(userAddress, setOrders);
+    loadOfferData(userAddress, setOrders, defaultTokens, setOfferItems);
   }, []);
 
   const handleCancelOrder = async (offerId) => {
@@ -129,7 +151,7 @@ const NFTOrder = () => {
       .catch(console.error);
 
     setOrders(null);
-    loadOfferData(userAddress, setOrders, defaultTokens);
+    loadOfferData(userAddress, setOrders, defaultTokens, setOfferItems);
   };
 
   const tableHeaders = [
@@ -140,9 +162,9 @@ const NFTOrder = () => {
       render: (data) => (
         <div className={styles['type-clmn']}>
           <span>{data.type} </span>
-          <Link href={urlMaker.nft.item.root(undefined,
-            data.itemNumber)}
-          ><a>{data.assetCode}</a>
+          <Link href={urlMaker.nft.item.root(offerItems ? offerItems[data.id].slug : null,
+            offerItems ? offerItems[data.id].number : null)}
+          ><a>{offerItems ? offerItems[data.id].assetCode : ''}</a>
           </Link>
         </div>
       ),
@@ -198,7 +220,7 @@ const NFTOrder = () => {
                   columns={tableHeaders}
                   dataSource={orders}
                   noDataMessage="You have no offers"
-                  loading={!orders}
+                  loading={!orders || !offerItems}
                 />
               </div>
             </div>
