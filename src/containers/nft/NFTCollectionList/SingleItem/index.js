@@ -148,6 +148,7 @@ const NFTDetail = ({ itemData }) => {
             const offerSellingAsset = getAssetDetails({
               code: offer.selling.asset_code,
               issuer: offer.selling.asset_issuer,
+              type: offer.selling.asset_type,
             });
             if (isSameAsset(offerSellingAsset, currentItem)) {
               offerFound = offer.id;
