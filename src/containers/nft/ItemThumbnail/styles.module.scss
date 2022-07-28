@@ -1,0 +1,56 @@
+@import "styles/vars";
+
+.card {
+  padding: 0 6px 0 6px;
+  background-color: var(--white);
+  border-radius: 4px;
+  box-shadow: var(--boxShadow);
+}
+.card-link {
+  text-decoration: none;
+  &:hover {
+    text-decoration: none;
+  }
+}
+
+.title {
+  font-size: 14px;
+  height: 20px;
+  margin-top: 2px;
+  line-height: 2;
+  color: var(--rollingStone);
+}
+
+.img {
+  display: flex;
+  justify-content: center;
+  border-radius: 4px;
+  position: relative;
+  margin: 8px 0 5px 0;
+  img {
+    border-radius: 4px;
+  }
+}
+
+.value {
+  span {
+    font-size: 14px;
+    height: 20px;
+    font-weight: 500;
+    line-height: 1.9;
+    color: var(--codGray);
+  }
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  height: 33px;
+  position: relative;
+  padding-bottom: 13px;
+
+  svg {
+    width: 12px;
+    height: 14px;
+    margin-right: 4px;
+    margin-top: 6px;
+  }
+}

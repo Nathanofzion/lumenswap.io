@@ -1,24 +1,24 @@
 import Head from 'next/head';
 import classNames from 'classnames';
-import LusiThumbnail from 'containers/nft/LusiThumbnail';
+import ItemThumbnail from 'containers/nft/ItemThumbnail';
 import Loading from 'components/Loading';
 import urlMaker from 'helpers/urlMaker';
 import { useState, useEffect } from 'react';
 import { useSelector } from 'react-redux';
 import { useRouter } from 'next/router';
 import useIsLogged from 'hooks/useIsLogged';
-import fetchAllLusi from 'api/AllLusiAPI';
 import BN from 'helpers/BN';
 import NoData from 'components/NoData';
 import CCard from 'components/CCard';
 import ServerSideLoading from 'components/ServerSideLoading';
+import { getMyNfts } from 'api/nft';
 import NFTHeader from '../NFTHeader';
 import styles from './styles.module.scss';
 
 const Container = ({ children }) => (
   <div className="container-fluid">
     <Head>
-      <title>My Lusi | Lumenswap</title>
+      <title>My Items | Lumenswap</title>
     </Head>
     <NFTHeader />
     {children}
@@ -26,7 +26,7 @@ const Container = ({ children }) => (
 );
 
 const NFTCollections = () => {
-  const [myLusi, setMyLusi] = useState(null);
+  const [myItems, setMyItems] = useState(null);
   const userBalances = useSelector((state) => state.userBalance);
   const isLogged = useIsLogged();
 
@@ -39,16 +39,16 @@ const NFTCollections = () => {
   }, [isLogged]);
 
   useEffect(() => {
-    const lusis = userBalances
+    const items = userBalances
       .filter((i) => i.asset.issuer === process.env.REACT_APP_LUSI_ISSUER
       && new BN(i.rawBalance).isGreaterThan(0))
-      .map((i) => i.asset.code);
-    fetchAllLusi().then((data) => {
-      setMyLusi(data.filter((i) => lusis.includes(i.assetCode)));
+      .map((i) => ({ code: i.asset.code, issuer: i.asset.issuer }));
+    getMyNfts(items).then((nfts) => {
+      setMyItems(nfts);
     });
   }, []);
 
-  if (!myLusi) {
+  if (!myItems) {
     return (
       <Container>
         <div className={styles['loading-container']}>
@@ -65,24 +65,24 @@ const NFTCollections = () => {
           <div className="row justify-content-center">
             <div className="col-xl-8 col-lg-10 col-md-11 col-sm-12 col-12">
 
-              <h1 className={styles.title}>My Lusi</h1>
+              <h1 className={styles.title}>My Items</h1>
 
               <div className={classNames('row', styles.row)}>
-                {myLusi.length === 0 && (
+                {myItems.length === 0 && (
                 <CCard className={styles['no-data-card']}>
-                  <NoData message="You have no Lusi." />
+                  <NoData message="You have no item." />
                 </CCard>
                 )}
-                {myLusi?.map((item) => (
+                {myItems?.map((item) => (
                   <div
                     key={item.id}
                     className={classNames('col-xl-3 col-lg-4 col-md-4 col-sm-4 col-12', styles.col, styles['no-data-card'])}
                   >
-                    <LusiThumbnail
-                      name={`Lusi ${item.number}`}
+                    <ItemThumbnail
+                      name={item.assetCode}
                       imgSrc={item.imageUrl}
                       price={item.price}
-                      url={urlMaker.nft.lusi.root(item.number)}
+                      url={urlMaker.nft.item.root(item.slug, item.number)}
                     />
                   </div>
                 ))}

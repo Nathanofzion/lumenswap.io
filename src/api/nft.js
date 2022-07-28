@@ -1,12 +1,12 @@
 import axios from 'axios';
 
-export function checkLusiDropped(address) {
+export function checkItemDropped(address) {
   return axios.get(
     `${process.env.REACT_APP_LUMEN_API}/nft/airdrop/${address}`,
   );
 }
 
-export function claimLusiApi(address) {
+export function claimItemApi(address) {
   return axios.post(
     `${process.env.REACT_APP_LUMEN_API}/nft/airdrop/${address}/claim`,
   );
@@ -29,4 +29,43 @@ export function getAccounts(assetCode, cursor) {
 
 export function fetchNFTActivity() {
   return axios.get(`${process.env.REACT_APP_LUMEN_API}/nft/activity`);
+}
+
+export async function getNFTCollections() {
+  const response = await axios.get(`${process.env.REACT_APP_LUMEN_API}/nft/collection`);
+  return response.data;
+}
+
+export async function getCollectionNfts(slug) {
+  const response = await axios.get(`${process.env.REACT_APP_LUMEN_API}/nft/collection/${slug}/nfts`);
+  return response.data;
+}
+
+export async function getCollectionStats(slug) {
+  const response = await axios.get(`${process.env.REACT_APP_LUMEN_API}/nft/collection/${slug}/stats`);
+  return response.data;
+}
+
+export async function getSingleCollection(slug) {
+  const response = await axios.get(`${process.env.REACT_APP_LUMEN_API}/nft/collection/${slug}`);
+  return response.data;
+}
+
+export async function getItemDetails(slug, id) {
+  const response = await axios.get(`${process.env.REACT_APP_LUMEN_API}/nft/collection/${slug}/nfts/${id}`);
+  return response.data;
+}
+
+export async function getMyNfts(userNfts) {
+  const response = await axios.post(`${process.env.REACT_APP_LUMEN_API}/nft/my-nfts`, {
+    assets: userNfts,
+  });
+  return response.data;
+}
+
+export async function getMyOffersData(userOffers) {
+  const response = await axios.post(`${process.env.REACT_APP_LUMEN_API}/nft/my-offers`, {
+    assets: userOffers,
+  });
+  return response.data;
 }
