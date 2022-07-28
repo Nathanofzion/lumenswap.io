@@ -1,6 +1,11 @@
 import NLSPMediumLogo from 'assets/images/NLSPMediumLogo';
+import BN from 'helpers/BN';
 import humanizeAmount from 'helpers/humanizeAmount';
 import styles from './styles.module.scss';
+
+function divAmount(amount) {
+  return new BN(amount).div(10 ** 7);
+}
 
 function CollectionDataCard({ collection, collectionStats }) {
   return (
@@ -31,11 +36,11 @@ function CollectionDataCard({ collection, collectionStats }) {
             <span className={styles['collection-info-stats-item-title']}>Owners</span>
           </div>
           <div className={styles['collection-info-stats-item']}>
-            <span className={styles['collection-info-stats-item-info']}>{humanizeAmount(collectionStats.floorPrice)}<NLSPMediumLogo /></span>
+            <span className={styles['collection-info-stats-item-info']}>{humanizeAmount(divAmount(collectionStats.floorPrice))}<NLSPMediumLogo /></span>
             <span className={styles['collection-info-stats-item-title']}>Floor price</span>
           </div>
           <div className={styles['collection-info-stats-item']}>
-            <span className={styles['collection-info-stats-item-info']}>{humanizeAmount(collectionStats.totalVolume)}<NLSPMediumLogo /></span>
+            <span className={styles['collection-info-stats-item-info']}>{humanizeAmount(divAmount(collectionStats.totalVolume))}<NLSPMediumLogo /></span>
             <span className={styles['collection-info-stats-item-title']}>Total volume</span>
           </div>
         </div>
