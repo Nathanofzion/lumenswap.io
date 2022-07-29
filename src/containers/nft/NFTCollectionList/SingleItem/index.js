@@ -356,7 +356,7 @@ const NFTDetail = ({ itemData }) => {
   return (
     <div className="container-fluid">
       <Head>
-        <title>Item#{itemData.number} | Lumenswap</title>
+        <title>{itemData.Collection.name} #{itemData.number} | Lumenswap</title>
       </Head>
       <NFTHeader />
       <ServerSideLoading>

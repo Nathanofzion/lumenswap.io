@@ -81,7 +81,7 @@ const NFTCollectionListPage = ({ collectionData, collectionStats }) => {
   ];
 
   return (
-    <NFTListContainer title="Collection nfts| Lumenswap">
+    <NFTListContainer title="Collection nfts | Lumenswap">
       <ServerSideLoading>
         <div className={classNames('layout main', styles.main)}>
           <div className="row justify-content-center">
