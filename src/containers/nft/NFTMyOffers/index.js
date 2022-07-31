@@ -153,7 +153,6 @@ const NFTOrder = () => {
     setOrders(null);
     loadOfferData(userAddress, setOrders, defaultTokens, setOfferItems);
   };
-
   const tableHeaders = [
     {
       title: 'Info',
@@ -164,7 +163,7 @@ const NFTOrder = () => {
           <span>{data.type} </span>
           <Link href={urlMaker.nft.item.root(offerItems ? offerItems[data.id].slug : null,
             offerItems ? offerItems[data.id].number : null)}
-          ><a>{offerItems ? offerItems[data.id].assetCode : ''}</a>
+          ><a>{offerItems ? `${offerItems[data.id].itemName}#${offerItems[data.id].number}` : ''}</a>
           </Link>
         </div>
       ),

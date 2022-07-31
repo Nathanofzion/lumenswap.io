@@ -20,7 +20,7 @@ function CollectionNftsData({ collectionNfts }) {
           className={classNames('col-xl-3 col-lg-4 col-md-4 col-sm-4 col-12', styles.col, styles['m-t-col'])}
         >
           <ItemThumbnail
-            name={item.assetCode}
+            name={`${item.Collection.itemName}-${item.number}`}
             imgSrc={item.imageUrl}
             price={item.price}
             url={urlMaker.nft.item.root(item.Collection.slug, item.number)}

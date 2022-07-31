@@ -222,7 +222,7 @@ const NFTDetail = ({ itemData }) => {
     {
       title: 'Asset',
       externalLink: {
-        title: `${itemData.assetCode}`,
+        title: `${itemData.Collection.itemName} #${itemData.number}`,
         url: assetGenerator(itemData.assetCode, process.env.REACT_APP_LUSI_ISSUER),
       },
     },
@@ -288,7 +288,7 @@ const NFTDetail = ({ itemData }) => {
       url: urlMaker.nft.collections.singleCollection(itemData.Collection.slug),
     },
     {
-      name: `${itemData.Collection.name} #${itemData.number}`,
+      name: `${itemData.Collection.itemName} #${itemData.number}`,
     },
   ];
 

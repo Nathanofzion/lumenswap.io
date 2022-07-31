@@ -49,7 +49,7 @@ function SingleItemAllOffers({ itemData }) {
       url: urlMaker.nft.collections.singleCollection(itemCollectionSlug),
     },
     {
-      name: `${itemCollectionName} #${itemId}`,
+      name: `${itemData.Collection.itemName} #${itemId}`,
       url: urlMaker.nft.item.root(itemCollectionSlug, itemId),
     },
     {

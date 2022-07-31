@@ -15,7 +15,7 @@ export default [
     render: (data) => (
       <Link href={urlMaker.nft.item.root(data.Nft.Collection.slug, data.Nft.number)}>
         <a className={styles.link}>
-          {data.Nft.assetCode}
+          {data.Nft.Collection.itemName}#{data.Nft.number}
         </a>
       </Link>
     ),
