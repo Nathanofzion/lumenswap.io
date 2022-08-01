@@ -27,6 +27,7 @@
 .filter {
   :global(.select__control) {
     width: 100%;
+    box-shadow: var(--boxShadow);
     height: 40px;
     border: solid 1px var(--catsKillWhite);
     border-radius: 4px;
@@ -93,7 +94,7 @@
     min-height: 454px;
     margin-bottom: 32px;
     background-color: var(--white);
-    box-shadow: 0 2px 20px 0 rgba(134, 146, 164, 0.08);
+    box-shadow: var(--boxShadow);
     border-radius: 4px;
     display: flex;
     flex-direction: column;
@@ -163,7 +164,7 @@
     letter-spacing: normal;
     min-height: 40px;
     text-align: center;
-    color: var(--rollingStone);
+    color: var(--rollingStoneToBombay);
     margin-top: 19px;
   }
   &-stats {
@@ -214,6 +215,7 @@
 
 .search-container {
   margin-bottom: 5px;
+  box-shadow: var(--boxShadow);
   input {
     height: 40px !important;
     border-radius: 4px !important;
