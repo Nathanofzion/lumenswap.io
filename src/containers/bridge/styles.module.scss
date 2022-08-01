@@ -100,6 +100,16 @@
   font-size: 20px;
 }
 
+.input:hover {
+  border: 1px solid var(--mischkaToRollingStone) !important;
+  outline: none;
+}
+
+.input:focus {
+  border: 1px solid var(--blueRibbon) !important;
+  outline: none;
+}
+
 .show-info {
   width: 330px;
   height: 116px;
