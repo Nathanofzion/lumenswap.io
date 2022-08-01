@@ -12,6 +12,9 @@
     text-decoration: none;
   }
 }
+.card:hover {
+  box-shadow: 0 4px 34px 0 rgba(134, 146, 164, 0.17);
+}
 
 .title {
   font-size: 14px;

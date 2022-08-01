@@ -92,17 +92,23 @@ const NFTCollectionListPage = ({ collectionData, collectionStats }) => {
               />
               <CollectionDataCard collection={collectionData} collectionStats={collectionStats} />
               <div className={styles['search-container']}>
-                <Input
-                  onChange={handleSearchNfts}
-                  placeholder="Search by number"
-                />
-                <SelectOption
-                  items={dropdownItems}
-                  defaultValue={select}
-                  setValue={setSelect}
-                  className={styles.filter}
-                  isSearchable={false}
-                />
+                <div className={classNames('row', styles['row-search'])}>
+                  <div className={classNames('col-xl-9 col-lg-8 col-md-8 col-sm-8 col-12', styles.col)}>
+                    <Input
+                      onChange={handleSearchNfts}
+                      placeholder="Search by number"
+                    />
+                  </div>
+                  <div className={classNames('col-xl-3 col-lg-4 col-md-4 col-sm-4 col-12', styles.col)}>
+                    <SelectOption
+                      items={dropdownItems}
+                      defaultValue={select}
+                      setValue={setSelect}
+                      className={styles.filter}
+                      isSearchable={false}
+                    />
+                  </div>
+                </div>
               </div>
               <CollectionNftsData
                 collectionNfts={filteredCollectionNfts}
