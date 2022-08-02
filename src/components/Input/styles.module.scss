@@ -2,7 +2,7 @@
 
 .input {
   width: 100%;
-  border: 1px solid var(--catsKillWhite);
+  border: 1px solid var(--catsKillWhite) !important;
   border-radius: 8px;
   outline: none;
   color: var(--codGray);
@@ -11,8 +11,13 @@
   transition: ease-in;
 }
 
+.input:hover {
+  border: 1px solid var(--mischkaToRollingStone) !important;
+  outline: none;
+}
+
 .input:focus {
-  border: 1px solid var(--blueRibbon);
+  border: 1px solid var(--blueRibbon) !important;
   outline: none;
 }
 

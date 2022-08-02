@@ -66,7 +66,7 @@ const CurrencyInput = ({
             </>
           )}
         </button>
-        <ModalDialog show={show} setShow={setShow} title="Select an assets">
+        <ModalDialog className={styles['modal-background']} show={show} setShow={setShow} title="Select an assets">
           <SelectAsset
             getFormValues={getFormValues}
             swapFromWithTo={swapFromWithTo}
