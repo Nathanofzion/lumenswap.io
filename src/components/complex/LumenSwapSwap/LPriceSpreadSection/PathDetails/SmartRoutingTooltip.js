@@ -14,15 +14,26 @@ function SmartRoutingTooltip({ routes }) {
       <br />
       <br />
       {routes.map((route, index) => {
-        const routePersentage = new BN(route.amount).div(divedTotalAmount).toNumber();
+        const routePersentage = new BN(route.amount).div(divedTotalAmount).toFixed(1);
+        const modifiedRoutes = [...route.route[0]];
+        if (route.route.length > 1) {
+          route.route.slice(1).forEach((path) => {
+            modifiedRoutes.push(path[1]);
+          });
+        }
         return (
           <div key={index}>
             <span>
-              {routePersentage}% {'->'} {route.route.map((routePath, routePathIndex) => (
-                <span>{routePathIndex < route.route.length && ' '}
-                  {routePath.map((path, pathIndex) => <span key={pathIndex}>{path}{pathIndex < routePath.length - 1 && '/'}</span>)}
-                </span>
-              ))}
+              {routePersentage}% {'->'}{' '}
+              <span>
+                {
+                  modifiedRoutes.map((routeItem, routeItemIndex) => (
+                    <span key={routeItemIndex}>
+                      {routeItem}{routeItemIndex < modifiedRoutes.length - 1 && '/'}
+                    </span>
+                  ))
+          }
+              </span>
             </span>
             <br />
           </div>
