@@ -2,6 +2,7 @@
 
 .smart-swap-btn {
   border: none;
+  box-shadow: var(--swapBtnBoxShadow) !important;
   background-image: linear-gradient(
     82deg,
     #50b0d8,
