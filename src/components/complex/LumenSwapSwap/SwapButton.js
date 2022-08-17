@@ -7,8 +7,9 @@ import { useWatch } from 'react-hook-form';
 import { useSelector } from 'react-redux';
 import useDefaultTokens from 'hooks/useDefaultTokens';
 import { extractTokenFromCode } from 'helpers/defaultTokenUtils';
+import classNames from 'classnames';
 
-export default function SwapButton({ control }) {
+export default function SwapButton({ control, className }) {
   const isLogged = useSelector((state) => state.user.logged);
   const formValues = useWatch({ control });
   const userBalance = useSelector((state) => state.userBalance);
@@ -56,7 +57,7 @@ export default function SwapButton({ control }) {
       fontSize={18}
       fontWeight={600}
       size="100%"
-      className="mt-3"
+      className={classNames('mt-3', message === 'Swap' && className)}
       disabled={disabled}
     />
   );

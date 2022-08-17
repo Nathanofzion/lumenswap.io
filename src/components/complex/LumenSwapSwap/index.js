@@ -18,6 +18,7 @@ import ObmHeader from 'containers/obm/ObmHeader';
 import { walletTypes } from 'components/complex/LumenSwapWallet/walletData';
 import useDefaultTokens from 'hooks/useDefaultTokens';
 import { extractTokenFromCode } from 'helpers/defaultTokenUtils';
+import calculateSmartRoute from 'api/swapAPI/smartRoute';
 import { changeToAsset } from './swapHelpers';
 import SwapHead from './SwapHead';
 import useUrl from './useUrl';
@@ -34,6 +35,7 @@ const LumenSwapSwap = ({
   const [show, setShow] = useState(false);
   const [loading, setLoading] = useState(false);
   const [estimatedPrice, setEstimatedPrice] = useState(0);
+  const [smartRoute, setSmartRoute] = useState(null);
   const [paths, setPaths] = useState([]);
   const isLogged = useSelector((state) => state.user.logged);
   const userCustomTokens = useSelector((state) => state.userCustomTokens);
@@ -71,6 +73,8 @@ const LumenSwapSwap = ({
   const onSubmit = (data) => {
     if (!isLogged) {
       dispatch(openConnectModal());
+    } else if (smartRoute) {
+      console.log('smart routing...');
     } else {
       dispatch(
         openModalAction({
@@ -84,6 +88,7 @@ const LumenSwapSwap = ({
   };
 
   function changeFromInput(amount) {
+    setSmartRoute(null);
     const formValues = getValues();
     setValue('from', {
       ...formValues.from,
@@ -103,26 +108,48 @@ const LumenSwapSwap = ({
       }
 
       timeoutRef.current = setTimeout(() => {
-        calculateSendEstimatedAndPath(
-          amount,
-          getAssetDetails(formValues.from.asset.details),
-          getAssetDetails(formValues.to.asset.details),
-        )
-          .then((res) => {
-            setEstimatedPrice(res.minAmount);
-            setPaths(res.path);
+        let defaultEstimatedPrice = null;
+        new Promise((resolve) => {
+          calculateSendEstimatedAndPath(
+            amount,
+            getAssetDetails(formValues.from.asset.details),
+            getAssetDetails(formValues.to.asset.details),
+          )
+            .then((res) => {
+              setEstimatedPrice(res.minAmount);
+              setPaths(res.path);
+              defaultEstimatedPrice = res.minAmount;
+            }).catch((err) => {
+              console.warn(err);
+            });
+
+          calculateSmartRoute(
+            new BN(amount).times(10 ** 7).toString(),
+            getAssetDetails(formValues.from.asset.details),
+            getAssetDetails(formValues.to.asset.details),
+          ).then((smartRouteData) => {
+            const smartEstimatedPrice = new BN(smartRouteData.outcome).div(10 ** 7).toString();
             setValue('from', {
               ...formValues.from,
               amount,
             });
             setValue('to', {
               ...formValues.to,
-              amount: res.minAmount,
+              amount: new BN.maximum(defaultEstimatedPrice, smartEstimatedPrice).toNumber(),
             });
-          })
-          .finally(() => {
-            setLoading(false);
+            if (new BN(smartEstimatedPrice).isGreaterThan(defaultEstimatedPrice)) {
+              setSmartRoute({
+                difference: new BN(smartEstimatedPrice).minus(defaultEstimatedPrice).toString(),
+                routes: smartRouteData.smart_route,
+              });
+            }
+            resolve();
+          }).catch((err) => {
+            console.warn(err);
           });
+        }).finally(() => {
+          setLoading(false);
+        });
       }, REQ_TIMEOUT_MS);
     }
 
@@ -331,7 +358,7 @@ const LumenSwapSwap = ({
                 estimatedPrice={estimatedPrice}
                 loading={loading}
               />
-              <SwapButton control={control} />
+              <SwapButton className={smartRoute && styles['smart-swap-btn']} control={control} />
               <ModalDialog show={show} setShow={setShow} title="Confirm Swap">
                 <ConfirmSwap />
               </ModalDialog>
@@ -343,6 +370,7 @@ const LumenSwapSwap = ({
                   control={control}
                   render={({ field }) => (
                     <LPriceSpreadSection
+                      smartRoute={smartRoute}
                       value={field.value}
                       onChange={field.onChange}
                       ref={null}

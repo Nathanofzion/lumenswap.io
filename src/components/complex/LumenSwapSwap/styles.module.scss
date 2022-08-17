@@ -1,5 +1,43 @@
 @import "styles/vars";
 
+.smart-swap-btn {
+  border: none;
+  background-image: linear-gradient(
+    82deg,
+    #50b0d8,
+    #63d65a 21%,
+    #eacd3d 37%,
+    #f79417 56%,
+    #da5131 74%,
+    #8155be
+  );
+}
+
+.smart-swap-btn:hover {
+  border: none;
+  background-image: linear-gradient(
+    82deg,
+    #50b0d8,
+    #63d65a 21%,
+    #eacd3d 37%,
+    #f79417 56%,
+    #da5131 74%,
+    #8155be
+  );
+}
+.smart-swap-btn:focus {
+  border: none;
+  background-image: linear-gradient(
+    82deg,
+    #50b0d8,
+    #63d65a 21%,
+    #eacd3d 37%,
+    #f79417 56%,
+    #da5131 74%,
+    #8155be
+  );
+}
+
 .container {
   width: 360px;
 }
