@@ -9,7 +9,7 @@ import useDefaultTokens from 'hooks/useDefaultTokens';
 import { extractTokenFromCode } from 'helpers/defaultTokenUtils';
 import classNames from 'classnames';
 
-export default function SwapButton({ control, className }) {
+export default function SwapButton({ control, className, loading }) {
   const isLogged = useSelector((state) => state.user.logged);
   const formValues = useWatch({ control });
   const userBalance = useSelector((state) => state.userBalance);
@@ -41,6 +41,10 @@ export default function SwapButton({ control, className }) {
     disabled = true;
   } else if (new BN(formValues.from.amount).isLessThanOrEqualTo('0') || new BN(formValues.from.amount).isNaN()) {
     message = 'Enter Amount';
+    variant = 'secondary';
+    disabled = true;
+  } else if (loading) {
+    message = 'Loading';
     variant = 'secondary';
     disabled = true;
   } else {

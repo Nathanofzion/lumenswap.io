@@ -14,6 +14,7 @@ import showSignResponse from 'helpers/showSignResponse';
 import showGenerateTrx from 'helpers/showGenerateTrx';
 import { useDispatch, useSelector } from 'react-redux';
 
+import generateSmartRoutingTRX from 'stellar-trx/generateSmartRoutingTRX';
 import styles from './styles.module.scss';
 
 const ConfirmSwap = ({ data }) => {
@@ -69,6 +70,19 @@ const ConfirmSwap = ({ data }) => {
 
   async function SwapTheTokens() {
     function func() {
+      if (data.smartRoutePath) {
+        const found = storeData.userBalance.find((i) => isSameAsset(i.asset, toAssetDetails));
+
+        return generateSmartRoutingTRX({
+          checkout: {
+            ...data,
+            fromAddress: storeData.user.detail.address,
+            toAddress: storeData.user.detail.address,
+          },
+          needToTrust: !found,
+        });
+      }
+
       const found = storeData.userBalance.find((i) => isSameAsset(i.asset, toAssetDetails));
       return generateSwapTRX({
         checkout: {
