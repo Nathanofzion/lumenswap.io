@@ -103,6 +103,11 @@ const SendAsset = ({ selectedAsset }) => {
 
       let found;
       for (const asset of destinationAddressInfo.balances) {
+        if (asset.asset_type === 'liquidity_pool_shares') {
+          // eslint-disable-next-line no-continue
+          continue;
+        }
+
         const isAssetMatchSelectedAsset = isSameAsset(
           getAssetDetails(selectedAsset),
           getAssetDetails({
