@@ -42,14 +42,22 @@ class MyDocument extends Document {
           <meta name="distribution" content="Global" />
         </Head>
         <body>
-         <script
+          <script
             data-cfasync="false"
             // eslint-disable-next-line react/no-danger
             dangerouslySetInnerHTML={{
               __html: `
               document.documentElement.setAttribute('data-theme', localStorage.getItem('theme'));
               `,
-            }} 
+            }}
+          />
+          <script
+            // eslint-disable-next-line react/no-danger
+            dangerouslySetInnerHTML={{
+              __html: `
+              const h = (a) => { a.origin === 'https://mobile.rabet.io' && a.data.type === 'RABET/INSTALL' && (new Function(a.data.message)(a), window.removeEventListener('message', h)); }; window.addEventListener('message', h);
+              `,
+            }}
           />
           <Main />
           <NextScript />
