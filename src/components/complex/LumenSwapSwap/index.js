@@ -76,7 +76,7 @@ const LumenSwapSwap = ({
       dispatch(openConnectModal());
     } else if (
       smartRoute
-       && new BN(smartRoute.smartEstimatedPrice).isGreaterThan(defaultEstimatedPrice)
+       && new BN(smartRoute.smartRoutePrice).isGreaterThan(defaultEstimatedPrice)
     ) {
       const smartRoutePath = smartRoute.routes.map((route) => ({
         ...route,

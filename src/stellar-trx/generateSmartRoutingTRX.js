@@ -35,7 +35,7 @@ export default async function generateSmartRoutingTRX({ checkout, needToTrust })
       sendAsset,
       destAsset,
       sendAmount: new BN(path.amount).div(10 ** 7).toFixed(7),
-      path: [],
+      path: operationPath,
       destination: checkout.toAddress,
       destMin: new BN(path.outcome).div(10 ** 7)
         .times(new BN(1).minus(new BN(checkout.priceSpread).div(100))).toFixed(7),
