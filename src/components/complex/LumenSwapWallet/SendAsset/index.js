@@ -105,7 +105,9 @@ const SendAsset = ({ selectedAsset }) => {
       for (const asset of destinationAddressInfo.balances) {
         const isAssetMatchSelectedAsset = isSameAsset(
           getAssetDetails(selectedAsset),
-          getAssetDetails({ code: asset.asset_code, issuer: asset.asset_issuer }),
+          getAssetDetails({
+            code: asset.asset_code, issuer: asset.asset_issuer, type: asset.asset_type,
+          }),
         );
         if (isAssetMatchSelectedAsset) {
           found = asset;
