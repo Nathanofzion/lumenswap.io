@@ -9,9 +9,10 @@ import ColorizedPriceImpact from 'components/complex/LumenSwapSwap/ColorizedPric
 import appConsts from 'appConsts';
 import { getAssetDetails } from 'helpers/asset';
 import styles from './styles.module.scss';
+import PathDetails from './PathDetails';
 
 export default function LPriceSpreadSection({
-  value, onChange, control, paths, estimatedPrice, upperLoading,
+  value, onChange, control, paths, estimatedPrice, upperLoading, smartRoute,
 }) {
   const [active, setActive] = useState(0);
   const isActive = (index) => ((active === index) ? 'active' : '');
@@ -124,23 +125,12 @@ export default function LPriceSpreadSection({
           </button>
         </div>
       </div>
-      <div className={styles.container}>
-        <div className={styles.label}>Path
-          <Tooltips id="path" text={<PrimaryTooltip text={appConsts.tooltip.path} />}><span className="icon-question-circle" /></Tooltips>
-        </div>
-        <div className={styles.path}>
-          {[
-            fromAssetDetails.getCode(),
-            ...paths.map((i) => i.asset_code),
-            toAssetDetails.getCode(),
-          ].map((item, index) => (
-            <div className={styles['path-container']} key={index}>
-              <span>{item?.toUpperCase() || 'XLM'}</span>
-              <span className="icon-arrow-right" />
-            </div>
-          ))}
-        </div>
-      </div>
+      <PathDetails
+        fromAssetDetails={fromAssetDetails}
+        toAssetDetails={toAssetDetails}
+        paths={paths}
+        smartRoute={smartRoute}
+      />
     </div>
   );
 }

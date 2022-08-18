@@ -18,6 +18,7 @@ import ObmHeader from 'containers/obm/ObmHeader';
 import { walletTypes } from 'components/complex/LumenSwapWallet/walletData';
 import useDefaultTokens from 'hooks/useDefaultTokens';
 import { extractTokenFromCode } from 'helpers/defaultTokenUtils';
+import calculateSmartRoute from 'api/swapAPI/smartRoute';
 import { changeToAsset } from './swapHelpers';
 import SwapHead from './SwapHead';
 import useUrl from './useUrl';
@@ -34,6 +35,8 @@ const LumenSwapSwap = ({
   const [show, setShow] = useState(false);
   const [loading, setLoading] = useState(false);
   const [estimatedPrice, setEstimatedPrice] = useState(0);
+  const [defaultEstimatedPrice, setDefaultEstimatedPrice] = useState(0);
+  const [smartRoute, setSmartRoute] = useState(null);
   const [paths, setPaths] = useState([]);
   const isLogged = useSelector((state) => state.user.logged);
   const userCustomTokens = useSelector((state) => state.userCustomTokens);
@@ -71,6 +74,30 @@ const LumenSwapSwap = ({
   const onSubmit = (data) => {
     if (!isLogged) {
       dispatch(openConnectModal());
+    } else if (
+      smartRoute
+       && new BN(smartRoute.smartRoutePrice).isGreaterThan(defaultEstimatedPrice)
+    ) {
+      const smartRoutePath = smartRoute.routes.map((route) => ({
+        ...route,
+        route: route.route
+          .map((assetRoute) => assetRoute.map((code) => {
+            const token = extractTokenFromCode(code, defaultTokens);
+            return getAssetDetails({ code: token.code, issuer: token.issuer });
+          })),
+      }));
+
+      dispatch(
+        openModalAction({
+          modalProps: {
+            title: 'Confirm Smart Route Swap',
+          },
+          content: <ConfirmSwap data={{
+            ...data, estimatedPrice, smartRoutePath,
+          }}
+          />,
+        }),
+      );
     } else {
       dispatch(
         openModalAction({
@@ -84,6 +111,7 @@ const LumenSwapSwap = ({
   };
 
   function changeFromInput(amount) {
+    setSmartRoute(null);
     const formValues = getValues();
     setValue('from', {
       ...formValues.from,
@@ -102,27 +130,51 @@ const LumenSwapSwap = ({
         clearTimeout(timeoutRef.current);
       }
 
-      timeoutRef.current = setTimeout(() => {
-        calculateSendEstimatedAndPath(
-          amount,
-          getAssetDetails(formValues.from.asset.details),
-          getAssetDetails(formValues.to.asset.details),
-        )
-          .then((res) => {
-            setEstimatedPrice(res.minAmount);
-            setPaths(res.path);
-            setValue('from', {
-              ...formValues.from,
+      timeoutRef.current = setTimeout(async () => {
+        try {
+          const responses = await Promise.all([
+            calculateSendEstimatedAndPath(
               amount,
-            });
-            setValue('to', {
-              ...formValues.to,
-              amount: res.minAmount,
-            });
-          })
-          .finally(() => {
-            setLoading(false);
+              getAssetDetails(formValues.from.asset.details),
+              getAssetDetails(formValues.to.asset.details),
+            ),
+            calculateSmartRoute(
+              new BN(amount).times(10 ** 7).toString(),
+              getAssetDetails(formValues.from.asset.details),
+              getAssetDetails(formValues.to.asset.details),
+            ),
+          ]);
+
+          const defaultResponse = responses[0];
+          setDefaultEstimatedPrice(defaultResponse.minAmount);
+
+          const smartRouteResponse = responses[1];
+          const smartEstimatedPrice = new BN(smartRouteResponse.outcome).div(10 ** 7).toString();
+          setValue('from', {
+            ...formValues.from,
+            amount,
           });
+          setValue('to', {
+            ...formValues.to,
+            amount: new BN.maximum(defaultResponse.minAmount, smartEstimatedPrice).toNumber(),
+          });
+          setEstimatedPrice(
+            new BN.maximum(defaultResponse.minAmount, smartEstimatedPrice).toNumber(),
+          );
+          if (new BN(smartEstimatedPrice).isGreaterThan(defaultResponse.minAmount)) {
+            setSmartRoute({
+              smartRoutePrice: smartEstimatedPrice,
+              difference: new BN(smartEstimatedPrice).minus(defaultResponse.minAmount).toString(),
+              routes: smartRouteResponse.smart_route,
+            });
+          } else {
+            setPaths(defaultResponse.path);
+          }
+        } catch (error) {
+          console.warn(error);
+        } finally {
+          setLoading(false);
+        }
       }, REQ_TIMEOUT_MS);
     }
 
@@ -139,6 +191,7 @@ const LumenSwapSwap = ({
   }
 
   function changeToInput(amount) {
+    setSmartRoute(null);
     const formValues = getValues();
     if (formValues.to.asset === null) {
       return;
@@ -331,7 +384,7 @@ const LumenSwapSwap = ({
                 estimatedPrice={estimatedPrice}
                 loading={loading}
               />
-              <SwapButton control={control} />
+              <SwapButton loading={loading} className={smartRoute && styles['smart-swap-btn']} control={control} />
               <ModalDialog show={show} setShow={setShow} title="Confirm Swap">
                 <ConfirmSwap />
               </ModalDialog>
@@ -343,6 +396,7 @@ const LumenSwapSwap = ({
                   control={control}
                   render={({ field }) => (
                     <LPriceSpreadSection
+                      smartRoute={smartRoute}
                       value={field.value}
                       onChange={field.onChange}
                       ref={null}

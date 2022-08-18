@@ -116,3 +116,65 @@
     color: white;
   }
 }
+.best-rate-container {
+  display: flex;
+  flex-direction: row;
+}
+.difference {
+  font-family: SofiaPro;
+  font-size: 12px;
+  font-weight: normal;
+  font-stretch: normal;
+  font-style: normal;
+  line-height: 1.7;
+  letter-spacing: normal;
+  color: var(--codGray);
+  height: 16px;
+  margin-right: 5px;
+}
+
+.best-rate-box {
+  width: 54px;
+  height: 20px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-image: linear-gradient(
+    70deg,
+    #50b0d8,
+    #63d65a 21%,
+    #eacd3d 37%,
+    #f79417 56%,
+    #da5131 74%,
+    #8155be
+  );
+  box-shadow: var(--swapBtnBoxShadow);
+
+  span {
+    font-family: SofiaPro;
+    font-size: 10px;
+    font-weight: 500;
+    font-stretch: normal;
+    font-style: normal;
+    line-height: 1.4;
+    letter-spacing: normal;
+    color: #fff;
+  }
+}
+
+.tooltip {
+  border-radius: 0.25rem;
+  box-shadow: 0 0 4px 0 rgba(0, 0, 0, 0.13) !important;
+  font-family: SofiaPro;
+  font-size: 14px;
+  font-weight: normal;
+  font-stretch: normal;
+  font-style: normal;
+  line-height: normal;
+  letter-spacing: normal;
+  background-color: var(--white);
+  text-align: left;
+  padding: 9px 12px 9px 12px;
+  max-width: 315px;
+}
