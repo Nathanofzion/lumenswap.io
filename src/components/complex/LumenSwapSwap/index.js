@@ -124,32 +124,63 @@ const LumenSwapSwap = ({
     if (formValues.to.asset === null) {
       return;
     }
+
     if (amount && !new BN(amount).isEqualTo(0)) {
       setLoading(true);
       if (timeoutRef.current) {
         clearTimeout(timeoutRef.current);
       }
 
+      const isFromCustomToken = userCustomTokens
+        .find((token) => isSameAsset(
+          getAssetDetails(token),
+          getAssetDetails({
+            code: formValues.from.asset.details.code,
+            issuer: formValues.from.asset.details.issuer,
+          }),
+        ));
+
+      const isToCustomToken = userCustomTokens
+        .find((token) => isSameAsset(
+          getAssetDetails(token),
+          getAssetDetails({
+            code: formValues.to.asset.details.code,
+            issuer: formValues.to.asset.details.issuer,
+          }),
+        ));
+
       timeoutRef.current = setTimeout(async () => {
         try {
-          const responses = await Promise.all([
+          const promises = [
             calculateSendEstimatedAndPath(
               amount,
               getAssetDetails(formValues.from.asset.details),
               getAssetDetails(formValues.to.asset.details),
             ),
-            calculateSmartRoute(
-              new BN(amount).times(10 ** 7).toString(),
-              getAssetDetails(formValues.from.asset.details),
-              getAssetDetails(formValues.to.asset.details),
-            ),
-          ]);
+          ];
+
+          if (!isFromCustomToken && !isToCustomToken) {
+            promises.push(
+              calculateSmartRoute(
+                new BN(amount).times(10 ** 7).toString(),
+                getAssetDetails(formValues.from.asset.details),
+                getAssetDetails(formValues.to.asset.details),
+              ),
+            );
+          }
+
+          const responses = await Promise.all(promises);
 
           const defaultResponse = responses[0];
           setDefaultEstimatedPrice(defaultResponse.minAmount);
 
           const smartRouteResponse = responses[1];
-          const smartEstimatedPrice = new BN(smartRouteResponse.outcome).div(10 ** 7).toString();
+          let smartEstimatedPrice = 0;
+
+          if (smartRouteResponse) {
+            smartEstimatedPrice = new BN(smartRouteResponse.outcome).div(10 ** 7).toString();
+          }
+
           setValue('from', {
             ...formValues.from,
             amount,
